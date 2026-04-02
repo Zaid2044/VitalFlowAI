@@ -1,554 +1,838 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VitalFlow AI — Doctor Portal</title>
-  <link
-    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap"
-    rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --navy: #0a1628;
-      --navy-mid: #112240;
-      --teal: #0d9488;
-      --teal-light: #14b8a6;
-      --teal-glow: rgba(13, 148, 136, 0.15);
-      --cream: #f0ede8;
-      --cream-dim: #c8c4bc;
-      --alert: #ef4444;
-      --gold: #f59e0b;
-      --text: #e8e4de;
+      --bg: #020d1a;
+      --surface: rgba(255,255,255,0.03);
+      --surface-hover: rgba(255,255,255,0.06);
+      --border: rgba(0,200,170,0.12);
+      --border-bright: rgba(0,200,170,0.35);
+      --teal: #00c8aa;
+      --teal-dim: rgba(0,200,170,0.15);
+      --teal-glow: rgba(0,200,170,0.4);
+      --blue: #0ea5e9;
+      --purple: #7c3aed;
+      --text: #e2eaf4;
+      --text-muted: #6b7fa3;
+      --text-dim: #3d4f6b;
+      --red: #f43f5e;
+      --amber: #f59e0b;
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
-    html,
-    body {
-      overflow-y: auto !important;
-      height: auto !important;
-    }
+    html, body { height: 100%; overflow: hidden; }
 
     body {
-      background: var(--navy);
+      background: var(--bg);
       color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      min-height: 100vh;
+      font-family: 'Inter', sans-serif;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      position: relative;
+      align-items: stretch;
     }
 
-    /* Animated background grid */
-    body::before {
-      content: '';
+    /* ── Canvas background ── */
+    #bg-canvas {
       position: fixed;
       inset: 0;
-      background-image:
-        linear-gradient(rgba(13, 148, 136, 0.06) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(13, 148, 136, 0.06) 1px, transparent 1px);
-      background-size: 60px 60px;
-      animation: gridMove 20s linear infinite;
-    }
-
-    @keyframes gridMove {
-      0% {
-        transform: translateY(0);
-      }
-
-      100% {
-        transform: translateY(60px);
-      }
-    }
-
-    /* Radial glow */
-    body::after {
-      content: '';
-      position: fixed;
-      top: -20%;
-      left: -10%;
-      width: 70%;
-      height: 70%;
-      background: radial-gradient(ellipse, rgba(13, 148, 136, 0.12) 0%, transparent 70%);
+      z-index: 0;
       pointer-events: none;
     }
 
-    .container {
+    /* ── Layout ── */
+    .layout {
       position: relative;
-      z-index: 10;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      min-height: 100vh;
+      z-index: 1;
+      display: flex;
       width: 100%;
+      height: 100vh;
     }
 
-    /* Left panel */
-    .left-panel {
+    /* ── Left Panel ── */
+    .left {
+      flex: 1;
       display: flex;
       flex-direction: column;
-      justify-content: center;
-      padding: 80px;
+      justify-content: space-between;
+      padding: 48px 56px;
       position: relative;
+      overflow: hidden;
     }
 
+    .left::after {
+      content: '';
+      position: absolute;
+      right: 0; top: 0; bottom: 0;
+      width: 1px;
+      background: linear-gradient(to bottom,
+        transparent 0%,
+        var(--border) 25%,
+        var(--border-bright) 50%,
+        var(--border) 75%,
+        transparent 100%
+      );
+    }
+
+    /* Logo */
     .logo {
       display: flex;
       align-items: center;
-      gap: 12px;
-      margin-bottom: 80px;
+      gap: 10px;
     }
 
-    .logo-icon {
-      width: 42px;
-      height: 42px;
-      background: var(--teal);
-      border-radius: 10px;
+    .logo-mark {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, var(--teal), #0284c7);
+      border-radius: 9px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 20px;
+      box-shadow: 0 0 20px var(--teal-glow);
     }
 
-    .logo-text {
-      font-family: 'DM Serif Display', serif;
-      font-size: 22px;
-      color: var(--cream);
-      letter-spacing: -0.5px;
+    .logo-mark svg { width: 18px; height: 18px; fill: #fff; }
+
+    .logo-name {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: var(--text);
     }
 
-    .logo-text span {
-      color: var(--teal-light);
+    .logo-name span { color: var(--teal); }
+
+    .logo-badge {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.5px;
+      color: var(--teal);
+      background: var(--teal-dim);
+      border: 1px solid var(--border-bright);
+      border-radius: 4px;
+      padding: 2px 6px;
+      text-transform: uppercase;
     }
 
-    .hero-text h1 {
-      font-family: 'DM Serif Display', serif;
-      font-size: clamp(38px, 4vw, 56px);
+    /* Hero */
+    .hero { flex: 1; display: flex; flex-direction: column; justify-content: center; max-width: 520px; }
+
+    .hero-eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 28px;
+    }
+
+    .pulse-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--teal);
+      box-shadow: 0 0 8px var(--teal);
+      animation: pulse-dot 2s ease-in-out infinite;
+    }
+
+    @keyframes pulse-dot {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.4); opacity: 0.6; }
+    }
+
+    .hero-eyebrow span {
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      color: var(--teal);
+    }
+
+    .hero h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: clamp(36px, 3.5vw, 52px);
+      font-weight: 700;
       line-height: 1.1;
-      color: var(--cream);
+      letter-spacing: -1px;
+      color: var(--text);
       margin-bottom: 20px;
     }
 
-    .hero-text h1 em {
-      font-style: italic;
-      color: var(--teal-light);
+    .hero h1 .accent {
+      background: linear-gradient(90deg, var(--teal), var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
 
-    .hero-text p {
-      font-size: 16px;
-      color: var(--cream-dim);
-      line-height: 1.7;
-      max-width: 380px;
+    .hero p {
+      font-size: 15px;
       font-weight: 300;
+      line-height: 1.75;
+      color: var(--text-muted);
+      max-width: 400px;
+      margin-bottom: 44px;
     }
 
-    .stats {
+    /* Vitals cards row */
+    .vitals-row {
       display: flex;
-      gap: 40px;
-      margin-top: 60px;
+      gap: 12px;
     }
 
-    .stat {
+    .vital-card {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.3s, background 0.3s;
+    }
+
+    .vital-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      border-radius: 12px 12px 0 0;
+    }
+
+    .vital-card.teal::before { background: linear-gradient(90deg, var(--teal), transparent); }
+    .vital-card.blue::before { background: linear-gradient(90deg, var(--blue), transparent); }
+    .vital-card.amber::before { background: linear-gradient(90deg, var(--amber), transparent); }
+    .vital-card.red::before { background: linear-gradient(90deg, var(--red), transparent); }
+
+    .vital-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 6px;
+    }
+
+    .vital-value {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      line-height: 1;
+      margin-bottom: 2px;
+    }
+
+    .vital-card.teal .vital-value { color: var(--teal); }
+    .vital-card.blue .vital-value { color: var(--blue); }
+    .vital-card.amber .vital-value { color: var(--amber); }
+    .vital-card.red .vital-value { color: var(--red); }
+
+    .vital-unit {
+      font-size: 10px;
+      color: var(--text-dim);
+    }
+
+    .vital-status {
+      position: absolute;
+      top: 12px; right: 12px;
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: var(--teal);
+      animation: pulse-dot 2.5s ease-in-out infinite;
+    }
+
+    .vital-card.blue .vital-status { background: var(--blue); box-shadow: 0 0 6px var(--blue); }
+    .vital-card.amber .vital-status { background: var(--amber); box-shadow: 0 0 6px var(--amber); animation-delay: 0.5s; }
+    .vital-card.red .vital-status { background: var(--red); box-shadow: 0 0 6px var(--red); animation-delay: 1s; }
+
+    /* ECG strip */
+    .ecg-strip {
+      margin-top: 24px;
+      position: relative;
+      height: 48px;
+    }
+
+    .ecg-strip svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .ecg-path {
+      stroke: var(--teal);
+      stroke-width: 1.5;
+      fill: none;
+      opacity: 0.6;
+      stroke-dasharray: 1000;
+      stroke-dashoffset: 1000;
+      animation: draw-ecg 3s ease forwards, ecg-loop 4s linear 3s infinite;
+    }
+
+    @keyframes draw-ecg {
+      to { stroke-dashoffset: 0; }
+    }
+
+    @keyframes ecg-loop {
+      0% { stroke-dashoffset: 0; opacity: 0.6; }
+      90% { stroke-dashoffset: 0; opacity: 0.6; }
+      100% { stroke-dashoffset: -1000; opacity: 0; }
+    }
+
+    /* Footer row */
+    .left-footer {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .footer-stat {
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 2px;
     }
 
-    .stat-num {
-      font-family: 'DM Serif Display', serif;
-      font-size: 32px;
-      color: var(--teal-light);
+    .footer-stat-num {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
     }
 
-    .stat-label {
-      font-size: 12px;
-      color: var(--cream-dim);
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
+    .footer-stat-label {
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 0.5px;
     }
 
-    /* Divider */
-    .divider {
+    .footer-divider {
       width: 1px;
-      background: linear-gradient(to bottom, transparent, rgba(13, 148, 136, 0.3) 30%, rgba(13, 148, 136, 0.3) 70%, transparent);
-      margin: 40px 0;
+      height: 32px;
+      background: var(--border);
     }
 
-    /* Right panel */
-    .right-panel {
+    /* ── Right Panel ── */
+    .right {
+      width: 480px;
       display: flex;
       align-items: center;
       justify-content: center;
-      padding: 60px;
-      background: rgba(17, 34, 64, 0.5);
-      backdrop-filter: blur(10px);
-      border-left: 1px solid rgba(13, 148, 136, 0.15);
+      padding: 40px;
+      background: rgba(2, 10, 22, 0.6);
+      backdrop-filter: blur(24px);
     }
 
-    .form-box {
+    .form-wrap {
       width: 100%;
-      max-width: 400px;
+      max-width: 380px;
+      animation: slide-in 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
-    .tab-group {
+    @keyframes slide-in {
+      from { opacity: 0; transform: translateY(24px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Tab switcher */
+    .tabs {
       display: flex;
-      gap: 0;
-      margin-bottom: 36px;
-      border-bottom: 1px solid rgba(13, 148, 136, 0.2);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 4px;
+      margin-bottom: 32px;
     }
 
     .tab {
       flex: 1;
-      padding: 12px 0;
+      padding: 9px;
       text-align: center;
-      font-size: 14px;
+      font-size: 13px;
       font-weight: 500;
-      color: var(--cream-dim);
+      color: var(--text-muted);
       cursor: pointer;
-      border-bottom: 2px solid transparent;
-      margin-bottom: -1px;
+      border-radius: 7px;
       transition: all 0.2s;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.2px;
     }
 
     .tab.active {
-      color: var(--teal-light);
-      border-bottom-color: var(--teal-light);
+      background: rgba(0,200,170,0.12);
+      color: var(--teal);
+      border: 1px solid var(--border-bright);
     }
 
-    .form-section {
-      display: none;
-    }
+    /* Form sections */
+    .form-section { display: none; }
+    .form-section.active { display: block; }
 
-    .form-section.active {
-      display: block;
-    }
+    .form-header { margin-bottom: 28px; }
 
     .form-title {
-      font-family: 'DM Serif Display', serif;
-      font-size: 26px;
-      color: var(--cream);
-      margin-bottom: 8px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      color: var(--text);
+      margin-bottom: 6px;
     }
 
-    .form-subtitle {
+    .form-sub {
       font-size: 13px;
-      color: var(--cream-dim);
-      margin-bottom: 32px;
+      color: var(--text-muted);
       font-weight: 300;
     }
 
-    .field {
-      margin-bottom: 18px;
-    }
+    /* Fields */
+    .field { margin-bottom: 16px; }
 
     .field label {
       display: block;
-      font-size: 12px;
-      font-weight: 500;
-      color: var(--cream-dim);
-      text-transform: uppercase;
+      font-size: 11px;
+      font-weight: 600;
       letter-spacing: 1px;
-      margin-bottom: 8px;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 7px;
     }
 
     .field input {
       width: 100%;
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(13, 148, 136, 0.2);
-      border-radius: 8px;
-      padding: 13px 16px;
-      color: var(--cream);
-      font-family: 'DM Sans', sans-serif;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 9px;
+      padding: 12px 14px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
       font-size: 14px;
       outline: none;
-      transition: border-color 0.2s, background 0.2s;
+      transition: all 0.2s;
     }
 
     .field input:focus {
       border-color: var(--teal);
-      background: rgba(13, 148, 136, 0.06);
+      background: var(--teal-dim);
+      box-shadow: 0 0 0 3px rgba(0,200,170,0.08);
     }
 
-    .field input::placeholder {
-      color: rgba(200, 196, 188, 0.35);
-    }
+    .field input::placeholder { color: var(--text-dim); }
 
-    .btn-primary {
+    /* Button */
+    .btn {
       width: 100%;
-      background: var(--teal);
+      background: linear-gradient(135deg, var(--teal) 0%, #0284c7 100%);
       color: #fff;
       border: none;
-      border-radius: 8px;
-      padding: 14px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 15px;
-      font-weight: 500;
+      border-radius: 9px;
+      padding: 13px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
       cursor: pointer;
-      margin-top: 8px;
-      transition: background 0.2s, transform 0.1s;
-      letter-spacing: 0.3px;
+      margin-top: 6px;
+      position: relative;
+      overflow: hidden;
+      transition: opacity 0.2s, transform 0.1s;
+      letter-spacing: 0.2px;
+      box-shadow: 0 4px 24px rgba(0,200,170,0.25);
     }
 
-    .btn-primary:hover {
-      background: var(--teal-light);
-    }
-
-    .btn-primary:active {
-      transform: scale(0.98);
-    }
-
-    .btn-primary:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .error-msg {
-      background: rgba(239, 68, 68, 0.1);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      border-radius: 6px;
-      padding: 10px 14px;
-      font-size: 13px;
-      color: #fca5a5;
-      margin-bottom: 16px;
-      display: none;
-    }
-
-    .success-msg {
-      background: rgba(13, 148, 136, 0.1);
-      border: 1px solid rgba(13, 148, 136, 0.3);
-      border-radius: 6px;
-      padding: 10px 14px;
-      font-size: 13px;
-      color: var(--teal-light);
-      margin-bottom: 16px;
-      display: none;
-    }
-
-    /* Heartbeat line decoration */
-    .ecg-line {
+    .btn::before {
+      content: '';
       position: absolute;
-      bottom: 60px;
-      left: 80px;
-      right: 80px;
-      height: 40px;
-      opacity: 0.2;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,0.12), transparent);
+      opacity: 0;
+      transition: opacity 0.2s;
     }
 
-    @keyframes fadeUp {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
+    .btn:hover::before { opacity: 1; }
+    .btn:active { transform: scale(0.98); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    /* Messages */
+    .msg {
+      border-radius: 8px;
+      padding: 10px 13px;
+      font-size: 12.5px;
+      margin-bottom: 14px;
+      display: none;
+      line-height: 1.5;
     }
 
-    .form-box {
-      animation: fadeUp 0.6s ease forwards;
+    .msg.error {
+      background: rgba(244,63,94,0.08);
+      border: 1px solid rgba(244,63,94,0.25);
+      color: #fda4af;
     }
 
-    .hero-text {
-      animation: fadeUp 0.5s ease forwards;
+    .msg.success {
+      background: rgba(0,200,170,0.08);
+      border: 1px solid rgba(0,200,170,0.25);
+      color: var(--teal);
     }
+
+    /* Divider */
+    .or-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .or-divider::before,
+    .or-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .or-divider span {
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: 0.5px;
+    }
+
+    /* Secure badge */
+    .secure-badge {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 20px;
+      font-size: 11px;
+      color: var(--text-dim);
+    }
+
+    .secure-badge svg { width: 12px; height: 12px; fill: var(--text-dim); }
   </style>
 </head>
-
 <body>
-  <div class="container">
-    <div class="left-panel">
-      <div class="logo">
-        <div class="logo-icon">🫀</div>
-        <div class="logo-text">VitalFlow <span>AI</span></div>
-      </div>
 
-      <div class="hero-text">
-        <h1>Smart Recovery,<br><em>Monitored</em><br>Continuously.</h1>
-        <p>An intelligent post-clinic monitoring system that learns patient behaviour, predicts risk early, and keeps
-          you informed before complications arise.</p>
-      </div>
+<canvas id="bg-canvas"></canvas>
 
-      <div class="stats">
-        <div class="stat">
-          <span class="stat-num">24/7</span>
-          <span class="stat-label">Monitoring</span>
-        </div>
-        <div class="stat">
-          <span class="stat-num">5</span>
-          <span class="stat-label">Vital Signs</span>
-        </div>
-        <div class="stat">
-          <span class="stat-num">AI</span>
-          <span class="stat-label">Risk Engine</span>
-        </div>
-      </div>
+<div class="layout">
 
-      <svg class="ecg-line" viewBox="0 0 600 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <polyline
-          points="0,20 80,20 100,20 110,2 120,38 130,10 140,20 220,20 240,20 250,2 260,38 270,10 280,20 400,20 420,20 430,2 440,38 450,10 460,20 600,20"
-          stroke="#0d9488" stroke-width="1.5" fill="none" />
-      </svg>
+  <!-- LEFT PANEL -->
+  <div class="left">
+    <div class="logo">
+      <div class="logo-mark">
+        <svg viewBox="0 0 24 24"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402C1 3.857 4.068 2 6.5 2 8.915 2 11.228 3.78 12 5.5c.772-1.72 3.085-3.5 5.5-3.5C19.932 2 23 3.857 23 7.19c0 4.105-5.37 8.863-11 14.403z"/></svg>
+      </div>
+      <span class="logo-name">VitalFlow <span>AI</span></span>
+      <span class="logo-badge">Doctor</span>
     </div>
 
-    <div class="divider"></div>
+    <div class="hero">
+      <div class="hero-eyebrow">
+        <div class="pulse-dot"></div>
+        <span>Real-time patient monitoring</span>
+      </div>
+      <h1>Intelligent care,<br><span class="accent">always on.</span></h1>
+      <p>Monitor vitals, track medication adherence, and receive AI-powered risk assessments — all from a single, elegant dashboard.</p>
 
-    <div class="right-panel">
-      <div class="form-box">
-        <div class="tab-group">
-          <div class="tab active" onclick="switchTab('login')">Sign In</div>
-          <div class="tab" onclick="switchTab('register')">Register</div>
+      <div class="vitals-row">
+        <div class="vital-card teal">
+          <div class="vital-status"></div>
+          <div class="vital-label">Heart Rate</div>
+          <div class="vital-value" id="vhr">72</div>
+          <div class="vital-unit">bpm</div>
         </div>
-
-        <!-- LOGIN -->
-        <div class="form-section active" id="login-section">
-          <div class="form-title">Welcome back</div>
-          <div class="form-subtitle">Sign in to your doctor dashboard</div>
-
-          <div class="error-msg" id="login-error"></div>
-          <div class="success-msg" id="login-success"></div>
-
-          <div class="field">
-            <label>Email</label>
-            <input type="email" id="login-email" placeholder="doctor@hospital.com">
-          </div>
-          <div class="field">
-            <label>Password</label>
-            <input type="password" id="login-password" placeholder="••••••••">
-          </div>
-          <button class="btn-primary" onclick="loginDoctor()" id="login-btn">Sign In</button>
+        <div class="vital-card blue">
+          <div class="vital-status"></div>
+          <div class="vital-label">Blood Sugar</div>
+          <div class="vital-value" id="vbs">98</div>
+          <div class="vital-unit">mg/dL</div>
         </div>
-
-        <!-- REGISTER -->
-        <div class="form-section" id="register-section">
-          <div class="form-title">Create account</div>
-          <div class="form-subtitle">Register as a new doctor</div>
-
-          <div class="error-msg" id="reg-error"></div>
-          <div class="success-msg" id="reg-success"></div>
-
-          <div class="field">
-            <label>Full Name</label>
-            <input type="text" id="reg-name" placeholder="Dr. Full Name">
-          </div>
-          <div class="field">
-            <label>Email</label>
-            <input type="email" id="reg-email" placeholder="doctor@hospital.com">
-          </div>
-          <div class="field">
-            <label>Specialization</label>
-            <input type="text" id="reg-spec" placeholder="e.g. General Physician">
-          </div>
-          <div class="field">
-            <label>Password</label>
-            <input type="password" id="reg-password" placeholder="••••••••">
-          </div>
-          <button class="btn-primary" onclick="registerDoctor()" id="reg-btn">Create Account</button>
+        <div class="vital-card amber">
+          <div class="vital-status"></div>
+          <div class="vital-label">Sys. BP</div>
+          <div class="vital-value" id="vbp">118</div>
+          <div class="vital-unit">mmHg</div>
         </div>
+        <div class="vital-card red">
+          <div class="vital-status"></div>
+          <div class="vital-label">SpO₂</div>
+          <div class="vital-value" id="vspo">98</div>
+          <div class="vital-unit">%</div>
+        </div>
+      </div>
+
+      <div class="ecg-strip">
+        <svg viewBox="0 0 560 48" preserveAspectRatio="none">
+          <path class="ecg-path" d="
+            M0,24 L60,24
+            L70,24 L78,6 L85,42 L92,8 L98,24
+            L160,24
+            L170,24 L178,6 L185,42 L192,8 L198,24
+            L260,24
+            L270,24 L278,6 L285,42 L292,8 L298,24
+            L360,24
+            L370,24 L378,6 L385,42 L392,8 L398,24
+            L460,24
+            L470,24 L478,6 L485,42 L492,8 L498,24
+            L560,24
+          "/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="left-footer">
+      <div class="footer-stat">
+        <span class="footer-stat-num">24/7</span>
+        <span class="footer-stat-label">Continuous Monitoring</span>
+      </div>
+      <div class="footer-divider"></div>
+      <div class="footer-stat">
+        <span class="footer-stat-num">6</span>
+        <span class="footer-stat-label">Vital Parameters</span>
+      </div>
+      <div class="footer-divider"></div>
+      <div class="footer-stat">
+        <span class="footer-stat-num">AI</span>
+        <span class="footer-stat-label">Risk Prediction</span>
       </div>
     </div>
   </div>
 
-  <script>
-    const API = 'http://localhost:8000';
+  <!-- RIGHT PANEL -->
+  <div class="right">
+    <div class="form-wrap">
 
-    function switchTab(tab) {
-      document.querySelectorAll('.tab').forEach((t, i) => {
-        t.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'));
-      });
-      document.getElementById('login-section').classList.toggle('active', tab === 'login');
-      document.getElementById('register-section').classList.toggle('active', tab === 'register');
-    }
+      <div class="tabs">
+        <div class="tab active" onclick="switchTab('login')">Sign In</div>
+        <div class="tab" onclick="switchTab('register')">Register</div>
+      </div>
 
-    function showMsg(id, msg, isError = true) {
-      const el = document.getElementById(id);
-      el.textContent = msg;
-      el.style.display = 'block';
-      setTimeout(() => el.style.display = 'none', 4000);
-    }
+      <!-- LOGIN -->
+      <div class="form-section active" id="login-section">
+        <div class="form-header">
+          <div class="form-title">Welcome back</div>
+          <div class="form-sub">Sign in to your doctor dashboard</div>
+        </div>
 
-    async function loginDoctor() {
-      const email = document.getElementById('login-email').value.trim();
-      const password = document.getElementById('login-password').value;
-      if (!email || !password) return showMsg('login-error', 'Please fill in all fields.');
+        <div class="msg error" id="login-error"></div>
+        <div class="msg success" id="login-success"></div>
 
-      const btn = document.getElementById('login-btn');
-      btn.disabled = true; btn.textContent = 'Signing in...';
+        <div class="field">
+          <label>Email Address</label>
+          <input type="email" id="login-email" placeholder="doctor@hospital.com" autocomplete="email">
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password">
+        </div>
+        <button class="btn" onclick="loginDoctor()" id="login-btn">Sign In</button>
+      </div>
 
-      try {
-        const form = new URLSearchParams();
-        form.append('username', email);
-        form.append('password', password);
+      <!-- REGISTER -->
+      <div class="form-section" id="register-section">
+        <div class="form-header">
+          <div class="form-title">Create account</div>
+          <div class="form-sub">Register as a new doctor</div>
+        </div>
 
-        const res = await fetch(`${API}/doctor/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-          body: form
-        });
+        <div class="msg error" id="reg-error"></div>
+        <div class="msg success" id="reg-success"></div>
 
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.detail || 'Login failed');
+        <div class="field">
+          <label>Full Name</label>
+          <input type="text" id="reg-name" placeholder="Dr. Full Name" autocomplete="name">
+        </div>
+        <div class="field">
+          <label>Email Address</label>
+          <input type="email" id="reg-email" placeholder="doctor@hospital.com" autocomplete="email">
+        </div>
+        <div class="field">
+          <label>Specialization <span style="text-transform:none;letter-spacing:0;font-weight:400;color:var(--text-dim)">(optional)</span></label>
+          <input type="text" id="reg-spec" placeholder="e.g. Cardiologist">
+        </div>
+        <div class="field">
+          <label>Password</label>
+          <input type="password" id="reg-password" placeholder="••••••••" autocomplete="new-password">
+        </div>
+        <button class="btn" onclick="registerDoctor()" id="reg-btn">Create Account</button>
+      </div>
 
-        localStorage.setItem('doctor_token', data.access_token);
-        localStorage.setItem('doctor_name', data.name);
-        localStorage.setItem('doctor_id', data.doctor_id);
+      <div class="secure-badge">
+        <svg viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/></svg>
+        256-bit encrypted · HIPAA compliant session
+      </div>
 
-        showMsg('login-success', 'Success! Redirecting...', false);
-        setTimeout(() => window.location.href = 'dashboard.html', 800);
-      } catch (e) {
-        showMsg('login-error', e.message);
-      } finally {
-        btn.disabled = false; btn.textContent = 'Sign In';
+    </div>
+  </div>
+</div>
+
+<script>
+  /* ── Animated particle canvas ── */
+  const canvas = document.getElementById('bg-canvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles;
+
+  function resize() {
+    W = canvas.width = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+
+  function initParticles() {
+    particles = Array.from({ length: 60 }, () => ({
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: Math.random() * 1.4 + 0.4,
+      vx: (Math.random() - 0.5) * 0.25,
+      vy: (Math.random() - 0.5) * 0.25,
+      opacity: Math.random() * 0.4 + 0.1,
+    }));
+  }
+
+  function drawCanvas() {
+    ctx.clearRect(0, 0, W, H);
+
+    // Draw connections
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < 140) {
+          ctx.beginPath();
+          ctx.strokeStyle = `rgba(0,200,170,${0.06 * (1 - dist / 140)})`;
+          ctx.lineWidth = 0.6;
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.stroke();
+        }
       }
     }
 
-    async function registerDoctor() {
-      const name = document.getElementById('reg-name').value.trim();
-      const email = document.getElementById('reg-email').value.trim();
-      const spec = document.getElementById('reg-spec').value.trim();
-      const password = document.getElementById('reg-password').value;
-      if (!name || !email || !password) return showMsg('reg-error', 'Name, email and password are required.');
+    // Draw particles
+    for (const p of particles) {
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(0,200,170,${p.opacity})`;
+      ctx.fill();
 
-      const btn = document.getElementById('reg-btn');
-      btn.disabled = true; btn.textContent = 'Creating...';
-
-      try {
-        const res = await fetch(`${API}/doctor/register`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, password, specialization: spec })
-        });
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.detail || 'Registration failed');
-
-        showMsg('reg-success', 'Account created! Please sign in.', false);
-        setTimeout(() => switchTab('login'), 1500);
-      } catch (e) {
-        showMsg('reg-error', e.message);
-      } finally {
-        btn.disabled = false; btn.textContent = 'Create Account';
-      }
+      p.x += p.vx;
+      p.y += p.vy;
+      if (p.x < 0 || p.x > W) p.vx *= -1;
+      if (p.y < 0 || p.y > H) p.vy *= -1;
     }
 
-    // Enter key support
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Enter') {
-        const active = document.querySelector('.form-section.active').id;
-        active === 'login-section' ? loginDoctor() : registerDoctor();
-      }
+    requestAnimationFrame(drawCanvas);
+  }
+
+  resize();
+  initParticles();
+  drawCanvas();
+  window.addEventListener('resize', () => { resize(); initParticles(); });
+
+  /* ── Animated vital values ── */
+  function animVital(id, base, range) {
+    const el = document.getElementById(id);
+    setInterval(() => {
+      const v = base + Math.round((Math.random() - 0.5) * range);
+      el.textContent = v;
+    }, 2200 + Math.random() * 800);
+  }
+  animVital('vhr', 72, 8);
+  animVital('vbs', 98, 12);
+  animVital('vbp', 118, 10);
+  animVital('vspo', 98, 2);
+
+  /* ── Tab switching ── */
+  const API = 'http://localhost:8000';
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach((t, i) => {
+      t.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'));
     });
+    document.getElementById('login-section').classList.toggle('active', tab === 'login');
+    document.getElementById('register-section').classList.toggle('active', tab === 'register');
+  }
 
-    // Redirect if already logged in
-    if (localStorage.getItem('doctor_token')) window.location.href = 'dashboard.html';
-  </script>
+  function showMsg(id, msg, type = 'error') {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.className = `msg ${type}`;
+    el.style.display = 'block';
+    setTimeout(() => el.style.display = 'none', 4000);
+  }
+
+  /* ── Auth ── */
+  async function loginDoctor() {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    if (!email || !password) return showMsg('login-error', 'Please fill in all fields.');
+
+    const btn = document.getElementById('login-btn');
+    btn.disabled = true; btn.textContent = 'Signing in…';
+
+    try {
+      const form = new URLSearchParams();
+      form.append('username', email);
+      form.append('password', password);
+
+      const res = await fetch(`${API}/doctor/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: form
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Login failed');
+
+      localStorage.setItem('doctor_token', data.access_token);
+      localStorage.setItem('doctor_name', data.name);
+      localStorage.setItem('doctor_id', data.doctor_id);
+
+      showMsg('login-success', 'Authenticated — redirecting…', 'success');
+      setTimeout(() => window.location.href = 'dashboard.html', 900);
+    } catch (e) {
+      showMsg('login-error', e.message);
+    } finally {
+      btn.disabled = false; btn.textContent = 'Sign In';
+    }
+  }
+
+  async function registerDoctor() {
+    const name = document.getElementById('reg-name').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const spec = document.getElementById('reg-spec').value.trim();
+    const password = document.getElementById('reg-password').value;
+    if (!name || !email || !password) return showMsg('reg-error', 'Name, email and password are required.');
+
+    const btn = document.getElementById('reg-btn');
+    btn.disabled = true; btn.textContent = 'Creating…';
+
+    try {
+      const res = await fetch(`${API}/doctor/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password, specialization: spec })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.detail || 'Registration failed');
+
+      showMsg('reg-success', 'Account created — please sign in.', 'success');
+      setTimeout(() => switchTab('login'), 1500);
+    } catch (e) {
+      showMsg('reg-error', e.message);
+    } finally {
+      btn.disabled = false; btn.textContent = 'Create Account';
+    }
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const active = document.querySelector('.form-section.active').id;
+      active === 'login-section' ? loginDoctor() : registerDoctor();
+    }
+  });
+
+  if (localStorage.getItem('doctor_token')) window.location.href = 'dashboard.html';
+</script>
 </body>
-
 </html>

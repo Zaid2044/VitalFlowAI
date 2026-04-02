@@ -7,6 +7,11 @@ load_dotenv()
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 
+def _sanitize(value: str, max_length: int = 100) -> str:
+    """Strip prompt-injection characters and truncate user-supplied strings."""
+    return value.replace("{", "").replace("}", "").replace("\n", " ").strip()[:max_length]
+
+
 def get_ai_suggestions(
     patient_name: str,
     disease_type: str,
@@ -14,6 +19,10 @@ def get_ai_suggestions(
     risk_level: str,
     latest_readings: dict,
 ) -> str:
+    safe_name = _sanitize(patient_name)
+    safe_disease = _sanitize(disease_type)
+    safe_risk = _sanitize(risk_level, max_length=20)
+
     readings_text = []
     if latest_readings.get("blood_sugar") is not None:
         readings_text.append(f"Blood Sugar: {latest_readings['blood_sugar']} mg/dL")
@@ -31,10 +40,10 @@ def get_ai_suggestions(
     prompt = f"""You are a medical health assistant giving personalized recovery advice.
 
 Patient Profile:
-- Name: {patient_name}
+- Name: {safe_name}
 - Age: {age}
-- Condition: {disease_type}
-- Current Risk Level: {risk_level}
+- Condition: {safe_disease}
+- Current Risk Level: {safe_risk}
 
 Latest Vitals:
 {readings_summary}

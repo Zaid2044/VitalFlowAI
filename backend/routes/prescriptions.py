@@ -1,26 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional, List
 import json
-import os
-from jose import jwt, JWTError
-from dotenv import load_dotenv
-
-load_dotenv()
 
 from database import get_db
 import models
-from auth import get_current_doctor
+from auth import get_current_doctor, get_current_patient
 from ml.risk_model import predict_risk
 
 router = APIRouter(prefix="/prescriptions", tags=["prescriptions"])
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-
-SECRET_KEY = os.getenv("SECRET_KEY", "fallback-secret-key")
-ALGORITHM = os.getenv("ALGORITHM", "HS256")
 
 
 class PrescriptionCreate(BaseModel):
@@ -138,28 +127,13 @@ def deactivate_prescription(
 @router.post("/calculate-risk")
 def calculate_risk(
     data: RiskCalculate,
-    token: str = Depends(oauth2_scheme),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    doctor: models.Doctor = Depends(get_current_doctor)
 ):
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
-
-    patient_id_from_token = payload.get("patient_id")
-    doctor_id_from_token = payload.get("doctor_id")
-
-    if patient_id_from_token:
-        patient = db.query(models.Patient).filter(
-            models.Patient.id == data.patient_id
-        ).first()
-    elif doctor_id_from_token:
-        patient = db.query(models.Patient).filter(
-            models.Patient.id == data.patient_id,
-            models.Patient.doctor_id == doctor_id_from_token
-        ).first()
-    else:
-        raise HTTPException(status_code=401, detail="Unauthorized")
+    patient = db.query(models.Patient).filter(
+        models.Patient.id == data.patient_id,
+        models.Patient.doctor_id == doctor.id
+    ).first()
 
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")

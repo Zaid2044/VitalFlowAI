@@ -8,6 +8,9 @@ from sklearn.preprocessing import StandardScaler
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "risk_model.pkl")
 SCALER_PATH = os.path.join(os.path.dirname(__file__), "risk_scaler.pkl")
 
+_model = None
+_scaler = None
+
 
 def generate_synthetic_data(n_samples: int = 1000):
     """
@@ -62,13 +65,17 @@ def train_model():
 
 
 def load_model():
+    global _model, _scaler
+    if _model is not None:
+        return _model, _scaler
     if not os.path.exists(MODEL_PATH):
-        return train_model()
+        _model, _scaler = train_model()
+        return _model, _scaler
     with open(MODEL_PATH, "rb") as f:
-        model = pickle.load(f)
+        _model = pickle.load(f)
     with open(SCALER_PATH, "rb") as f:
-        scaler = pickle.load(f)
-    return model, scaler
+        _scaler = pickle.load(f)
+    return _model, _scaler
 
 
 def predict_risk(

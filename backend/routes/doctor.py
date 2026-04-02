@@ -207,12 +207,15 @@ def get_all_alerts(
         models.Reading.alert_triggered == True
     ).order_by(models.Reading.timestamp.desc()).limit(50).all()
 
+    patient_map = {p.id: p.name for p in db.query(models.Patient).filter(
+        models.Patient.id.in_(patient_ids)
+    ).all()}
+
     result = []
     for alert in alerts:
-        patient = db.query(models.Patient).filter(models.Patient.id == alert.patient_id).first()
         result.append({
             "patient_id": alert.patient_id,
-            "patient_name": patient.name if patient else "Unknown",
+            "patient_name": patient_map.get(alert.patient_id, "Unknown"),
             "timestamp": alert.timestamp,
             "alert_message": alert.alert_message,
             "reading_id": alert.id

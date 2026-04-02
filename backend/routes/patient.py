@@ -4,7 +4,8 @@ from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from typing import Optional, List
 import json
-from datetime import date
+import logging
+from datetime import date, datetime, timezone
 
 from database import get_db
 import models
@@ -176,8 +177,6 @@ def log_adherence(
     patient: models.Patient = Depends(get_current_patient),
     db: Session = Depends(get_db)
 ):
-    from datetime import datetime
-
     existing = db.query(models.AdherenceLog).filter(
         models.AdherenceLog.patient_id == patient.id,
         models.AdherenceLog.prescription_id == data.prescription_id,
@@ -187,7 +186,7 @@ def log_adherence(
 
     if existing:
         existing.status = data.status
-        existing.logged_at = datetime.utcnow()
+        existing.logged_at = datetime.now(timezone.utc)
         db.commit()
         return {"message": "Updated", "id": existing.id}
 
@@ -197,12 +196,33 @@ def log_adherence(
         date=data.date,
         scheduled_time=data.scheduled_time,
         status=data.status,
-        logged_at=datetime.utcnow()
+        logged_at=datetime.now(timezone.utc)
     )
     db.add(log)
     db.commit()
     db.refresh(log)
     return {"message": "Logged", "id": log.id}
+
+
+@router.get("/adherence/today")
+def get_today_adherence(
+    patient: models.Patient = Depends(get_current_patient),
+    db: Session = Depends(get_db)
+):
+    today = date.today().isoformat()
+    logs = db.query(models.AdherenceLog).filter(
+        models.AdherenceLog.patient_id == patient.id,
+        models.AdherenceLog.date == today
+    ).all()
+    return [
+        {
+            "prescription_id": l.prescription_id,
+            "scheduled_time": l.scheduled_time,
+            "status": l.status,
+            "logged_at": l.logged_at.isoformat() if l.logged_at else None
+        }
+        for l in logs
+    ]
 
 
 @router.get("/suggestions")
@@ -241,4 +261,5 @@ def get_suggestions(
         )
         return {"suggestions": suggestions}
     except Exception as e:
-        return {"suggestions": f"Unable to generate suggestions at this time. Error: {str(e)}"}
+        logging.exception("AI suggestions failed for patient %s", patient.id)
+        return {"suggestions": "Unable to generate suggestions at this time. Please try again later."}

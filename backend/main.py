@@ -1,7 +1,10 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
+from fastapi.responses import PlainTextResponse
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from database import engine, Base
 import models  # noqa: F401 - ensures models are registered
@@ -23,14 +26,33 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# CORS - allow both portals to call the API
+# CORS - set ALLOWED_ORIGINS in .env as comma-separated list, e.g. "http://localhost:3000,http://localhost:5173"
+_raw_origins = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000,http://localhost:5173")
+allowed_origins = [o.strip() for o in _raw_origins.split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # In production, restrict this
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def private_network_access(request: Request, call_next):
+    """Allow Chrome's Private Network Access preflight (file:// → localhost)."""
+    if (request.method == "OPTIONS" and
+            "access-control-request-private-network" in request.headers):
+        response = PlainTextResponse("OK", status_code=200)
+        response.headers["Access-Control-Allow-Private-Network"] = "true"
+        response.headers["Access-Control-Allow-Origin"] = request.headers.get("origin", "*")
+        response.headers["Access-Control-Allow-Credentials"] = "true"
+        response.headers["Access-Control-Allow-Methods"] = "*"
+        response.headers["Access-Control-Allow-Headers"] = "*"
+        return response
+    return await call_next(request)
+
 
 # Routers
 app.include_router(doctor_router)
