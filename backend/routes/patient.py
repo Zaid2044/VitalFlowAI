@@ -12,6 +12,7 @@ import models
 from auth import verify_password, create_access_token, get_current_patient
 from alerts import check_thresholds
 from ai_suggestions import get_ai_suggestions
+from ml.risk_model import predict_risk
 
 router = APIRouter(prefix="/patient", tags=["patient"])
 
@@ -33,6 +34,13 @@ class AdherenceUpdate(BaseModel):
     date: str           # YYYY-MM-DD
     scheduled_time: str # HH:MM
     status: str         # taken / missed / late
+
+
+class RiskCalculate(BaseModel):
+    adherence_7day: float
+    missed_streak: int
+    avg_energy: float
+    symptom_score: float
 
 
 # ── Routes ────────────────────────────────────────────────────────────────────
@@ -202,6 +210,36 @@ def log_adherence(
     db.commit()
     db.refresh(log)
     return {"message": "Logged", "id": log.id}
+
+
+@router.post("/calculate-risk")
+def calculate_risk(
+    data: RiskCalculate,
+    patient: models.Patient = Depends(get_current_patient),
+    db: Session = Depends(get_db)
+):
+    result = predict_risk(
+        adherence_7day=data.adherence_7day,
+        missed_streak=data.missed_streak,
+        avg_energy=data.avg_energy,
+        symptom_score=data.symptom_score,
+        age=patient.age,
+        disease_type=patient.disease_type
+    )
+    risk_entry = models.RiskResult(
+        patient_id=patient.id,
+        risk_score=result["risk_score"],
+        risk_level=result["risk_level"],
+        features_used=json.dumps({
+            "adherence_7day": data.adherence_7day,
+            "missed_streak": data.missed_streak,
+            "avg_energy": data.avg_energy,
+            "symptom_score": data.symptom_score
+        })
+    )
+    db.add(risk_entry)
+    db.commit()
+    return result
 
 
 @router.get("/adherence/today")

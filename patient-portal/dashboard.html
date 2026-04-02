@@ -715,11 +715,9 @@
     btn.disabled = true; btn.textContent = 'Calculating...';
 
     try {
-      const patientId = localStorage.getItem('patient_id');
-      const res = await fetch(`${API}/prescriptions/calculate-risk`, {
+      const res = await fetch(`${API}/patient/calculate-risk`, {
         method: 'POST', headers: authHeaders,
         body: JSON.stringify({
-          patient_id: parseInt(patientId),
           adherence_7day: adherence,
           missed_streak: streak,
           avg_energy: energy,
