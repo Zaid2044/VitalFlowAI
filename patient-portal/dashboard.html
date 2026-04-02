@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VitalFlow AI — My Health</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  html, body { overflow-y: auto !important; height: auto !important; }
+  :root {
+    --navy:#0a1628; --navy-mid:#112240; --navy-card:#0f1e38;
+    --teal:#0d9488; --teal-light:#14b8a6; --teal-glow:rgba(13,148,136,0.12);
+    --cream:#f0ede8; --cream-dim:#8a8880;
+    --alert:#ef4444; --alert-bg:rgba(239,68,68,0.1);
+    --warn:#f59e0b; --warn-bg:rgba(245,158,11,0.1);
+    --ok:#10b981; --ok-bg:rgba(16,185,129,0.1);
+    --border:rgba(13,148,136,0.15); --text:#e8e4de;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--navy); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; }
+
+  .sidebar {
+    position:fixed; left:0; top:0; bottom:0; width:240px;
+    background:var(--navy-mid); border-right:1px solid var(--border);
+    display:flex; flex-direction:column; padding:28px 20px; z-index:100;
+    overflow-y:auto;
+  }
+  .logo { display:flex; align-items:center; gap:10px; margin-bottom:36px; padding:0 8px; }
+  .logo-icon { width:34px; height:34px; background:var(--teal); border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:16px; }
+  .logo-text { font-family:'DM Serif Display',serif; font-size:17px; color:var(--cream); }
+  .logo-text span { color:var(--teal-light); }
+
+  .patient-chip { background:var(--teal-glow); border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:28px; }
+  .patient-chip .p-name { font-size:14px; font-weight:600; color:var(--cream); margin-bottom:2px; }
+  .patient-chip .p-role { font-size:11px; color:var(--teal-light); text-transform:uppercase; letter-spacing:1px; }
+
+  .nav-label { font-size:10px; font-weight:600; color:var(--cream-dim); text-transform:uppercase; letter-spacing:1.5px; padding:0 8px; margin-bottom:8px; }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:8px; font-size:14px; font-weight:500; color:var(--cream-dim); cursor:pointer; transition:all .15s; margin-bottom:2px; text-decoration:none; }
+  .nav-item:hover { background:var(--teal-glow); color:var(--cream); }
+  .nav-item.active { background:var(--teal-glow); color:var(--teal-light); border-left:2px solid var(--teal-light); }
+  .nav-divider { height:1px; background:var(--border); margin:14px 8px; }
+
+  .sidebar-bottom { margin-top:auto; padding-top:20px; }
+  .btn-logout { width:100%; background:transparent; border:1px solid var(--border); border-radius:8px; padding:9px; color:var(--cream-dim); font-family:'DM Sans',sans-serif; font-size:13px; cursor:pointer; }
+  .btn-logout:hover { border-color:var(--alert); color:#fca5a5; }
+
+  .main { margin-left:240px; padding:36px 40px; }
+
+  .page-header { margin-bottom:28px; }
+  .page-title { font-family:'DM Serif Display',serif; font-size:28px; color:var(--cream); margin-bottom:4px; }
+  .page-sub { font-size:14px; color:var(--cream-dim); font-weight:300; }
+
+  .section { display:none; }
+  .section.active { display:block; }
+
+  /* Alert banner */
+  .alert-banner { background:var(--alert-bg); border:1px solid rgba(239,68,68,0.3); border-radius:10px; padding:14px 20px; margin-bottom:20px; display:none; }
+  .alert-banner.show { display:flex; align-items:flex-start; gap:12px; }
+  .alert-banner .icon { font-size:20px; flex-shrink:0; }
+  .alert-banner .title { font-size:14px; font-weight:600; color:#fca5a5; margin-bottom:4px; }
+  .alert-banner .msg { font-size:13px; color:var(--cream-dim); }
+
+  /* Cards */
+  .card { background:var(--navy-card); border:1px solid var(--border); border-radius:14px; overflow:hidden; margin-bottom:20px; }
+  .card-header { display:flex; align-items:center; justify-content:space-between; padding:18px 24px; border-bottom:1px solid var(--border); }
+  .card-title { font-family:'DM Serif Display',serif; font-size:17px; color:var(--cream); }
+
+  /* Vitals grid */
+  .vitals-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:1px; background:var(--border); }
+  .vital-box { background:var(--navy-card); padding:20px; }
+  .vital-box .v-label { font-size:11px; color:var(--cream-dim); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+  .vital-box .v-value { font-family:'DM Serif Display',serif; font-size:30px; color:var(--cream); }
+  .vital-box .v-unit { font-size:12px; color:var(--cream-dim); margin-top:2px; }
+  .vital-box.hi .v-value { color:var(--alert); }
+  .vital-box.lo .v-value { color:var(--warn); }
+
+  /* Log readings form */
+  .log-form { padding:24px; }
+  .log-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:16px; margin-bottom:20px; }
+  .log-field label { display:block; font-size:11px; font-weight:600; color:var(--cream-dim); text-transform:uppercase; letter-spacing:1px; margin-bottom:7px; }
+  .log-field input { width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:8px; padding:11px 14px; color:var(--cream); font-family:'DM Sans',sans-serif; font-size:14px; outline:none; transition:border-color .2s; }
+  .log-field input:focus { border-color:var(--teal); }
+  .log-field .unit-hint { font-size:11px; color:var(--cream-dim); margin-top:4px; }
+
+  .btn-primary { background:var(--teal); color:#fff; border:none; border-radius:8px; padding:12px 24px; font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; cursor:pointer; transition:background .15s; }
+  .btn-primary:hover { background:var(--teal-light); }
+  .btn-primary:disabled { opacity:0.6; cursor:not-allowed; }
+
+  .submit-result { margin-top:14px; padding:12px 16px; border-radius:8px; font-size:13px; display:none; }
+  .submit-result.ok { background:var(--ok-bg); border:1px solid rgba(16,185,129,0.25); color:#6ee7b7; }
+  .submit-result.err { background:var(--alert-bg); border:1px solid rgba(239,68,68,0.25); color:#fca5a5; }
+  .submit-result.warn { background:var(--warn-bg); border:1px solid rgba(245,158,11,0.25); color:#fcd34d; }
+
+  /* Prescriptions */
+  .rx-list { padding:8px 0; }
+  .rx-item { padding:18px 24px; border-bottom:1px solid rgba(13,148,136,0.07); }
+  .rx-item:last-child { border-bottom:none; }
+  .rx-name { font-size:15px; font-weight:600; color:var(--cream); margin-bottom:6px; }
+  .rx-meta { font-size:13px; color:var(--cream-dim); margin-bottom:10px; }
+  .rx-timings { display:flex; gap:8px; flex-wrap:wrap; }
+  .rx-time-chip { background:var(--teal-glow); border:1px solid rgba(13,148,136,0.25); border-radius:20px; padding:4px 14px; font-size:12px; color:var(--teal-light); font-weight:500; }
+  .rx-instructions { font-size:12px; color:var(--cream-dim); margin-top:8px; font-style:italic; }
+
+  /* Alarm section */
+  .alarm-section { padding:20px 24px; }
+  .alarm-item { display:flex; align-items:center; gap:14px; background:var(--teal-glow); border:1px solid var(--border); border-radius:10px; padding:14px 18px; margin-bottom:10px; }
+  .alarm-icon { font-size:24px; }
+  .alarm-info .a-med { font-size:14px; font-weight:600; color:var(--cream); }
+  .alarm-info .a-time { font-size:13px; color:var(--teal-light); margin-top:2px; }
+  .alarm-info .a-dose { font-size:12px; color:var(--cream-dim); }
+
+  /* Risk section */
+  .risk-display { padding:28px 24px; text-align:center; }
+  .risk-score-big { font-family:'DM Serif Display',serif; font-size:64px; margin-bottom:8px; }
+  .risk-score-big.Low { color:var(--ok); }
+  .risk-score-big.Medium { color:var(--warn); }
+  .risk-score-big.High { color:var(--alert); }
+  .risk-score-big.Unknown { color:var(--cream-dim); }
+  .risk-label { font-size:14px; color:var(--cream-dim); margin-bottom:24px; }
+
+  .risk-bars { display:flex; gap:10px; justify-content:center; margin-bottom:24px; }
+  .risk-bar-item { text-align:center; }
+  .risk-bar-item .bar-label { font-size:11px; color:var(--cream-dim); text-transform:uppercase; letter-spacing:1px; margin-bottom:6px; }
+  .risk-bar-item .bar-val { font-size:20px; font-weight:600; }
+  .risk-bar-item .bar-val.low { color:var(--ok); }
+  .risk-bar-item .bar-val.med { color:var(--warn); }
+  .risk-bar-item .bar-val.high { color:var(--alert); }
+
+  .risk-form { background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:10px; padding:20px; margin-top:10px; text-align:left; }
+  .risk-form-title { font-size:13px; font-weight:600; color:var(--cream); margin-bottom:14px; }
+  .risk-inputs { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+  .risk-inputs label { display:block; font-size:11px; color:var(--cream-dim); text-transform:uppercase; letter-spacing:1px; margin-bottom:5px; }
+  .risk-inputs input { width:100%; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:7px; padding:9px 12px; color:var(--cream); font-family:'DM Sans',sans-serif; font-size:13px; outline:none; }
+  .risk-inputs input:focus { border-color:var(--teal); }
+
+  /* Suggestions */
+  .suggestions-body { padding:24px; }
+  .suggestions-content { font-size:14px; line-height:1.8; color:var(--cream-dim); white-space:pre-wrap; }
+  .suggestions-content strong, .suggestions-content b { color:var(--cream); }
+  .btn-refresh { background:transparent; border:1px solid var(--border); border-radius:7px; padding:7px 14px; color:var(--cream-dim); font-family:'DM Sans',sans-serif; font-size:12px; cursor:pointer; transition:all .15s; }
+  .btn-refresh:hover { border-color:var(--teal); color:var(--teal-light); }
+
+  /* History table */
+  table { width:100%; border-collapse:collapse; }
+  th { font-size:11px; font-weight:600; color:var(--cream-dim); text-transform:uppercase; letter-spacing:1px; padding:12px 20px; text-align:left; border-bottom:1px solid var(--border); }
+  td { padding:12px 20px; font-size:13px; color:var(--cream); border-bottom:1px solid rgba(13,148,136,0.07); }
+  tr:last-child td { border-bottom:none; }
+  .alert-row td { background:rgba(239,68,68,0.05) !important; }
+
+  .empty-state { text-align:center; padding:50px 24px; color:var(--cream-dim); }
+  .empty-state .icon { font-size:36px; margin-bottom:10px; }
+
+  .loading { text-align:center; padding:30px; color:var(--cream-dim); font-size:13px; }
+
+  ::-webkit-scrollbar { width:5px; }
+  ::-webkit-scrollbar-track { background:transparent; }
+  ::-webkit-scrollbar-thumb { background:rgba(13,148,136,.3); border-radius:3px; }
+</style>
+</head>
+<body>
+
+<div class="sidebar">
+  <div class="logo">
+    <div class="logo-icon">🫀</div>
+    <div class="logo-text">VitalFlow <span>AI</span></div>
+  </div>
+
+  <div class="patient-chip">
+    <div class="p-name" id="sidebar-name">Loading...</div>
+    <div class="p-role">Patient</div>
+  </div>
+
+  <div class="nav-label">My Health</div>
+  <a class="nav-item active" onclick="showSection('overview')"><span>⊞</span> Overview</a>
+  <a class="nav-item" onclick="showSection('log')"><span>📊</span> Log Readings</a>
+  <a class="nav-item" onclick="showSection('prescriptions')"><span>💊</span> Prescriptions</a>
+  <a class="nav-item" onclick="showSection('risk')"><span>🧠</span> Risk Score</a>
+  <a class="nav-item" onclick="showSection('suggestions')"><span>✨</span> AI Suggestions</a>
+  <a class="nav-item" onclick="showSection('history')"><span>📋</span> History</a>
+
+  <div class="sidebar-bottom">
+    <button class="btn-logout" onclick="logout()">Sign Out</button>
+  </div>
+</div>
+
+<div class="main">
+
+  <!-- OVERVIEW -->
+  <div class="section active" id="section-overview">
+    <div class="page-header">
+      <div class="page-title">My Overview</div>
+      <div class="page-sub" id="overview-sub">Good to see you</div>
+    </div>
+
+    <div class="alert-banner" id="alert-banner">
+      <div class="icon">🚨</div>
+      <div>
+        <div class="title">Health Alert Detected</div>
+        <div class="msg" id="alert-banner-msg"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Latest Vitals</div>
+        <span id="latest-time" style="font-size:12px;color:var(--cream-dim)"></span>
+      </div>
+      <div class="vitals-grid" id="vitals-grid">
+        <div class="empty-state" style="grid-column:1/-1"><div class="icon">📊</div><p>No readings yet. Log your first reading.</p></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Today's Medications</div>
+      </div>
+      <div class="alarm-section" id="today-meds">
+        <div class="loading">Loading prescriptions...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOG READINGS -->
+  <div class="section" id="section-log">
+    <div class="page-header">
+      <div class="page-title">Log Readings</div>
+      <div class="page-sub">Enter your current vital signs</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title">Enter Vitals</div></div>
+      <div class="log-form">
+        <div class="log-grid">
+          <div class="log-field">
+            <label>Blood Sugar</label>
+            <input type="number" id="v-sugar" placeholder="e.g. 120" step="0.1">
+            <div class="unit-hint">mg/dL &nbsp;·&nbsp; Normal: 70–180</div>
+          </div>
+          <div class="log-field">
+            <label>Systolic BP</label>
+            <input type="number" id="v-sys" placeholder="e.g. 120" step="1">
+            <div class="unit-hint">mmHg &nbsp;·&nbsp; Normal: 90–140</div>
+          </div>
+          <div class="log-field">
+            <label>Diastolic BP</label>
+            <input type="number" id="v-dia" placeholder="e.g. 80" step="1">
+            <div class="unit-hint">mmHg &nbsp;·&nbsp; Normal: 60–90</div>
+          </div>
+          <div class="log-field">
+            <label>Heart Rate</label>
+            <input type="number" id="v-hr" placeholder="e.g. 72" step="1">
+            <div class="unit-hint">bpm &nbsp;·&nbsp; Normal: 50–100</div>
+          </div>
+          <div class="log-field">
+            <label>Temperature</label>
+            <input type="number" id="v-temp" placeholder="e.g. 37.0" step="0.1">
+            <div class="unit-hint">°C &nbsp;·&nbsp; Normal: 35–38.5</div>
+          </div>
+          <div class="log-field">
+            <label>SpO2</label>
+            <input type="number" id="v-spo2" placeholder="e.g. 98" step="0.1" max="100">
+            <div class="unit-hint">% &nbsp;·&nbsp; Normal: ≥94%</div>
+          </div>
+        </div>
+        <div class="log-field" style="max-width:400px">
+          <label>Notes (optional)</label>
+          <input type="text" id="v-notes" placeholder="e.g. Feeling dizzy after lunch">
+        </div>
+        <button class="btn-primary" onclick="submitReading()" id="submit-btn">Submit Reading</button>
+        <div class="submit-result" id="submit-result"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRESCRIPTIONS -->
+  <div class="section" id="section-prescriptions">
+    <div class="page-header">
+      <div class="page-title">My Prescriptions</div>
+      <div class="page-sub">Active medications and reminders</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title">Active Medications</div></div>
+      <div class="rx-list" id="rx-list">
+        <div class="loading">Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RISK SCORE -->
+  <div class="section" id="section-risk">
+    <div class="page-header">
+      <div class="page-title">Risk Score</div>
+      <div class="page-sub">Your current health deterioration risk</div>
+    </div>
+
+    <div class="card">
+      <div class="risk-display">
+        <div class="risk-score-big Unknown" id="risk-level-big">—</div>
+        <div class="risk-label" id="risk-score-label">Submit readings and feedback below to calculate</div>
+
+        <div class="risk-bars" id="risk-bars" style="display:none">
+          <div class="risk-bar-item">
+            <div class="bar-label">Low</div>
+            <div class="bar-val low" id="prob-low">—</div>
+          </div>
+          <div class="risk-bar-item">
+            <div class="bar-label">Medium</div>
+            <div class="bar-val med" id="prob-med">—</div>
+          </div>
+          <div class="risk-bar-item">
+            <div class="bar-label">High</div>
+            <div class="bar-val high" id="prob-high">—</div>
+          </div>
+        </div>
+
+        <div class="risk-form">
+          <div class="risk-form-title">Weekly Self-Assessment</div>
+          <div class="risk-inputs">
+            <div>
+              <label>7-Day Adherence %</label>
+              <input type="number" id="r-adherence" placeholder="e.g. 80" min="0" max="100">
+            </div>
+            <div>
+              <label>Missed Dose Streak</label>
+              <input type="number" id="r-streak" placeholder="e.g. 2" min="0">
+            </div>
+            <div>
+              <label>Energy Level (1–10)</label>
+              <input type="number" id="r-energy" placeholder="e.g. 6" min="1" max="10">
+            </div>
+            <div>
+              <label>Symptom Severity (0–10)</label>
+              <input type="number" id="r-symptom" placeholder="e.g. 4" min="0" max="10">
+            </div>
+          </div>
+          <button class="btn-primary" onclick="calculateRisk()" id="risk-btn">Calculate My Risk</button>
+          <div class="submit-result" id="risk-result"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI SUGGESTIONS -->
+  <div class="section" id="section-suggestions">
+    <div class="page-header">
+      <div class="page-title">AI Suggestions</div>
+      <div class="page-sub">Personalized food and lifestyle advice</div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">Your Personalized Plan</div>
+        <button class="btn-refresh" onclick="loadSuggestions(true)" id="refresh-btn">↻ Refresh</button>
+      </div>
+      <div class="suggestions-body">
+        <div class="suggestions-content" id="suggestions-content">
+          <div class="loading">Generating your personalized suggestions...</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HISTORY -->
+  <div class="section" id="section-history">
+    <div class="page-header">
+      <div class="page-title">Reading History</div>
+      <div class="page-sub">Your past 30 readings</div>
+    </div>
+
+    <div class="card">
+      <table>
+        <thead>
+          <tr>
+            <th>Date & Time</th>
+            <th>Sugar</th>
+            <th>BP</th>
+            <th>HR</th>
+            <th>Temp</th>
+            <th>SpO2</th>
+            <th>Alert</th>
+          </tr>
+        </thead>
+        <tbody id="history-body">
+          <tr><td colspan="7" class="loading">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const API = 'http://localhost:8000';
+  const token = localStorage.getItem('patient_token');
+  if (!token) window.location.href = 'index.html';
+  const authHeaders = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+
+  let patientInfo = null;
+  let suggestionsLoaded = false;
+
+  document.getElementById('sidebar-name').textContent = localStorage.getItem('patient_name') || 'Patient';
+
+  function showSection(name) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById(`section-${name}`).classList.add('active');
+    event.currentTarget.classList.add('active');
+
+    if (name === 'suggestions' && !suggestionsLoaded) loadSuggestions();
+    if (name === 'history') loadHistory();
+    if (name === 'risk') loadRisk();
+  }
+
+  async function loadMe() {
+    try {
+      const res = await fetch(`${API}/patient/me`, { headers: authHeaders });
+      if (res.status === 401) return logout();
+      patientInfo = await res.json();
+      document.getElementById('sidebar-name').textContent = patientInfo.name;
+      document.getElementById('overview-sub').textContent = `${patientInfo.disease_type} · Age ${patientInfo.age}`;
+    } catch(e) {}
+  }
+
+  async function loadReadings() {
+    try {
+      const res = await fetch(`${API}/patient/readings`, { headers: authHeaders });
+      const readings = await res.json();
+      if (!readings.length) return;
+
+      const latest = readings[0];
+      document.getElementById('latest-time').textContent = new Date(latest.timestamp).toLocaleString();
+
+      if (latest.alert_triggered) {
+        const banner = document.getElementById('alert-banner');
+        banner.classList.add('show');
+        document.getElementById('alert-banner-msg').textContent = latest.alert_message;
+      }
+
+      const vitals = [
+        { key:'blood_sugar', label:'Blood Sugar', unit:'mg/dL', high:180, low:70 },
+        { key:'systolic_bp', label:'Systolic BP', unit:'mmHg', high:140, low:90 },
+        { key:'diastolic_bp', label:'Diastolic BP', unit:'mmHg', high:90, low:60 },
+        { key:'heart_rate', label:'Heart Rate', unit:'bpm', high:100, low:50 },
+        { key:'temperature', label:'Temp', unit:'°C', high:38.5, low:35 },
+        { key:'spo2', label:'SpO2', unit:'%', high:null, low:94 },
+      ];
+
+      const grid = document.getElementById('vitals-grid');
+      const boxes = vitals.map(v => {
+        const val = latest[v.key];
+        if (val == null) return '';
+        let cls = '';
+        if (v.high && val > v.high) cls = 'hi';
+        else if (v.low && val < v.low) cls = 'lo';
+        return `<div class="vital-box ${cls}">
+          <div class="v-label">${v.label}</div>
+          <div class="v-value">${val}</div>
+          <div class="v-unit">${v.unit}</div>
+        </div>`;
+      }).join('');
+      grid.innerHTML = boxes || `<div class="empty-state" style="grid-column:1/-1"><p>No readings yet</p></div>`;
+    } catch(e) {}
+  }
+
+  async function loadPrescriptions() {
+    try {
+      const res = await fetch(`${API}/patient/prescriptions`, { headers: authHeaders });
+      const rxs = await res.json();
+
+      // Today's meds overview
+      const todayDiv = document.getElementById('today-meds');
+      if (!rxs.length) {
+        todayDiv.innerHTML = `<div class="empty-state"><div class="icon">💊</div><p>No active prescriptions</p></div>`;
+      } else {
+        todayDiv.innerHTML = rxs.flatMap(rx =>
+          (rx.timing || []).map(t => `
+            <div class="alarm-item">
+              <div class="alarm-icon">💊</div>
+              <div class="alarm-info">
+                <div class="a-med">${rx.medicine_name}</div>
+                <div class="a-time">⏰ ${t}</div>
+                <div class="a-dose">${rx.dosage} · ${rx.frequency}</div>
+              </div>
+            </div>
+          `)
+        ).join('');
+      }
+
+      // Full prescription list
+      const rxList = document.getElementById('rx-list');
+      if (!rxs.length) {
+        rxList.innerHTML = `<div class="empty-state"><div class="icon">💊</div><p>No active prescriptions</p></div>`;
+      } else {
+        rxList.innerHTML = rxs.map(rx => `
+          <div class="rx-item">
+            <div class="rx-name">${rx.medicine_name} <span style="font-size:13px;font-weight:400;color:var(--cream-dim)">${rx.dosage}</span></div>
+            <div class="rx-meta">${rx.frequency} · From ${rx.start_date}${rx.end_date ? ' to ' + rx.end_date : ''}</div>
+            <div class="rx-timings">
+              ${(rx.timing || []).map(t => `<div class="rx-time-chip">⏰ ${t}</div>`).join('')}
+            </div>
+            ${rx.instructions ? `<div class="rx-instructions">📝 ${rx.instructions}</div>` : ''}
+          </div>
+        `).join('');
+      }
+
+      // Set up alarms
+      setupAlarms(rxs);
+    } catch(e) {}
+  }
+
+  function setupAlarms(rxs) {
+    // Check every minute if it's time for a medication
+    setInterval(() => {
+      const now = new Date();
+      const hh = String(now.getHours()).padStart(2,'0');
+      const mm = String(now.getMinutes()).padStart(2,'0');
+      const currentTime = `${hh}:${mm}`;
+
+      rxs.forEach(rx => {
+        (rx.timing || []).forEach(t => {
+          if (t === currentTime) {
+            showMedAlarm(rx.medicine_name, rx.dosage, t);
+          }
+        });
+      });
+    }, 60000);
+  }
+
+  function showMedAlarm(med, dose, time) {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification(`💊 Time for ${med}`, { body: `${dose} scheduled at ${time}` });
+    }
+    // Also show in-page alert
+    const banner = document.createElement('div');
+    banner.style.cssText = 'position:fixed;top:20px;right:20px;background:#0d9488;color:#fff;padding:16px 20px;border-radius:10px;z-index:9999;font-family:DM Sans,sans-serif;font-size:14px;box-shadow:0 4px 20px rgba(0,0,0,0.4)';
+    banner.innerHTML = `💊 <strong>${med}</strong> — time to take your ${dose}`;
+    document.body.appendChild(banner);
+    setTimeout(() => banner.remove(), 8000);
+  }
+
+  async function submitReading() {
+    const payload = {
+      blood_sugar: parseFloat(document.getElementById('v-sugar').value) || null,
+      systolic_bp: parseFloat(document.getElementById('v-sys').value) || null,
+      diastolic_bp: parseFloat(document.getElementById('v-dia').value) || null,
+      heart_rate: parseFloat(document.getElementById('v-hr').value) || null,
+      temperature: parseFloat(document.getElementById('v-temp').value) || null,
+      spo2: parseFloat(document.getElementById('v-spo2').value) || null,
+      notes: document.getElementById('v-notes').value || null,
+    };
+
+    const hasAny = Object.values(payload).some(v => v !== null && v !== '');
+    if (!hasAny) return showSubmitResult('Please enter at least one reading.', 'err');
+
+    const btn = document.getElementById('submit-btn');
+    btn.disabled = true; btn.textContent = 'Submitting...';
+
+    try {
+      const res = await fetch(`${API}/patient/readings`, {
+        method: 'POST', headers: authHeaders, body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error('Failed');
+
+      if (data.alert_triggered) {
+        showSubmitResult(`⚠ Alert: ${data.alert_message}`, 'warn');
+      } else {
+        showSubmitResult('✓ Reading saved successfully.', 'ok');
+      }
+
+      // Clear form
+      ['v-sugar','v-sys','v-dia','v-hr','v-temp','v-spo2','v-notes'].forEach(id => document.getElementById(id).value = '');
+      loadReadings();
+      suggestionsLoaded = false; // force refresh suggestions
+    } catch(e) {
+      showSubmitResult('Failed to save reading.', 'err');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Submit Reading';
+    }
+  }
+
+  function showSubmitResult(msg, type) {
+    const el = document.getElementById('submit-result');
+    el.textContent = msg; el.className = `submit-result ${type}`;
+    el.style.display = 'block';
+    setTimeout(() => el.style.display = 'none', 5000);
+  }
+
+  async function loadRisk() {
+    try {
+      const res = await fetch(`${API}/patient/risk`, { headers: authHeaders });
+      const data = await res.json();
+      if (data.latest && data.latest.risk_level !== 'Unknown') {
+        const level = data.latest.risk_level;
+        const el = document.getElementById('risk-level-big');
+        el.textContent = level;
+        el.className = `risk-score-big ${level}`;
+        document.getElementById('risk-score-label').textContent = `Risk Score: ${(data.latest.risk_score * 100).toFixed(0)}% · Last updated: ${new Date(data.latest.timestamp).toLocaleString()}`;
+      }
+    } catch(e) {}
+  }
+
+  async function calculateRisk() {
+    const adherence = parseFloat(document.getElementById('r-adherence').value);
+    const streak = parseInt(document.getElementById('r-streak').value);
+    const energy = parseFloat(document.getElementById('r-energy').value);
+    const symptom = parseFloat(document.getElementById('r-symptom').value);
+
+    if (isNaN(adherence) || isNaN(streak) || isNaN(energy) || isNaN(symptom)) {
+      return showRiskResult('Please fill in all four fields.', 'err');
+    }
+
+    const btn = document.getElementById('risk-btn');
+    btn.disabled = true; btn.textContent = 'Calculating...';
+
+    try {
+      const patientId = localStorage.getItem('patient_id');
+      const res = await fetch(`${API}/prescriptions/calculate-risk`, {
+        method: 'POST', headers: authHeaders,
+        body: JSON.stringify({
+          patient_id: parseInt(patientId),
+          adherence_7day: adherence,
+          missed_streak: streak,
+          avg_energy: energy,
+          symptom_score: symptom
+        })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error('Failed');
+
+      const level = data.risk_level;
+      const el = document.getElementById('risk-level-big');
+      el.textContent = level;
+      el.className = `risk-score-big ${level}`;
+      document.getElementById('risk-score-label').textContent = `Risk Score: ${(data.risk_score * 100).toFixed(0)}%`;
+
+      document.getElementById('prob-low').textContent = `${(data.probabilities.low * 100).toFixed(0)}%`;
+      document.getElementById('prob-med').textContent = `${(data.probabilities.medium * 100).toFixed(0)}%`;
+      document.getElementById('prob-high').textContent = `${(data.probabilities.high * 100).toFixed(0)}%`;
+      document.getElementById('risk-bars').style.display = 'flex';
+
+      showRiskResult(`✓ Risk calculated: ${level}`, level === 'High' ? 'err' : level === 'Medium' ? 'warn' : 'ok');
+      suggestionsLoaded = false;
+    } catch(e) {
+      showRiskResult('Calculation failed. Try again.', 'err');
+    } finally {
+      btn.disabled = false; btn.textContent = 'Calculate My Risk';
+    }
+  }
+
+  function showRiskResult(msg, type) {
+    const el = document.getElementById('risk-result');
+    el.textContent = msg; el.className = `submit-result ${type}`;
+    el.style.display = 'block';
+    setTimeout(() => el.style.display = 'none', 5000);
+  }
+
+  async function loadSuggestions(force = false) {
+    if (suggestionsLoaded && !force) return;
+    const content = document.getElementById('suggestions-content');
+    content.innerHTML = '<div class="loading">✨ Generating personalized suggestions with AI...</div>';
+    document.getElementById('refresh-btn').disabled = true;
+
+    try {
+      const res = await fetch(`${API}/patient/suggestions`, { headers: authHeaders });
+      const data = await res.json();
+      // Convert markdown bold to html
+      const formatted = data.suggestions
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>');
+      content.innerHTML = `<div class="suggestions-content">${formatted}</div>`;
+      suggestionsLoaded = true;
+    } catch(e) {
+      content.innerHTML = '<div class="loading">Failed to load suggestions. Check your API key.</div>';
+    } finally {
+      document.getElementById('refresh-btn').disabled = false;
+    }
+  }
+
+  async function loadHistory() {
+    try {
+      const res = await fetch(`${API}/patient/readings`, { headers: authHeaders });
+      const readings = await res.json();
+      const tbody = document.getElementById('history-body');
+      if (!readings.length) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--cream-dim);padding:40px">No readings yet</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = readings.map(r => `
+        <tr class="${r.alert_triggered ? 'alert-row' : ''}">
+          <td>${new Date(r.timestamp).toLocaleString()}</td>
+          <td>${r.blood_sugar ?? '—'}</td>
+          <td>${r.systolic_bp ?? '—'}/${r.diastolic_bp ?? '—'}</td>
+          <td>${r.heart_rate ?? '—'}</td>
+          <td>${r.temperature ?? '—'}</td>
+          <td>${r.spo2 ?? '—'}</td>
+          <td>${r.alert_triggered ? '<span style="color:#fca5a5">⚠ Alert</span>' : '—'}</td>
+        </tr>
+      `).join('');
+    } catch(e) {}
+  }
+
+  function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+
+  // Request notification permission
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission();
+  }
+
+  // Init
+  loadMe();
+  loadReadings();
+  loadPrescriptions();
+  loadRisk();
+</script>
+</body>
+</html>

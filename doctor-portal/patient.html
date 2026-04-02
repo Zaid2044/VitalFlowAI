@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VitalFlow AI — Patient</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap"
+    rel="stylesheet">
+  <style>
+    :root {
+      --navy: #0a1628;
+      --navy-mid: #112240;
+      --navy-card: #0f1e38;
+      --teal: #0d9488;
+      --teal-light: #14b8a6;
+      --teal-glow: rgba(13, 148, 136, 0.12);
+      --cream: #f0ede8;
+      --cream-dim: #8a8880;
+      --alert: #ef4444;
+      --alert-bg: rgba(239, 68, 68, 0.1);
+      --warn: #f59e0b;
+      --warn-bg: rgba(245, 158, 11, 0.1);
+      --ok: #10b981;
+      --ok-bg: rgba(16, 185, 129, 0.1);
+      --border: rgba(13, 148, 136, 0.15);
+      --text: #e8e4de;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      overflow-y: auto !important;
+      height: auto !important;
+    }
+
+    body {
+      background: var(--navy);
+      color: var(--text);
+      font-family: 'DM Sans', sans-serif;
+      min-height: 100vh;
+    }
+
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 240px;
+      background: var(--navy-mid);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 28px 20px;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 40px;
+      padding: 0 8px;
+    }
+
+    .logo-icon {
+      width: 34px;
+      height: 34px;
+      background: var(--teal);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .logo-text {
+      font-family: 'DM Serif Display', serif;
+      font-size: 17px;
+      color: var(--cream);
+    }
+
+    .logo-text span {
+      color: var(--teal-light);
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--cream-dim);
+      cursor: pointer;
+      transition: all .15s;
+      margin-bottom: 2px;
+      text-decoration: none;
+    }
+
+    .nav-item:hover {
+      background: var(--teal-glow);
+      color: var(--cream);
+    }
+
+    .sidebar-bottom {
+      margin-top: auto;
+      padding: 0 8px;
+    }
+
+    .btn-logout {
+      width: 100%;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 9px;
+      color: var(--cream-dim);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+      transition: all .15s;
+    }
+
+    .btn-logout:hover {
+      border-color: var(--alert);
+      color: #fca5a5;
+    }
+
+    .main {
+      margin-left: 240px;
+      padding: 36px 40px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--cream-dim);
+      font-size: 13px;
+      text-decoration: none;
+      margin-bottom: 24px;
+      transition: color .15s;
+    }
+
+    .back-link:hover {
+      color: var(--teal-light);
+    }
+
+    .patient-header {
+      background: var(--navy-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 28px 32px;
+      margin-bottom: 24px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      gap: 24px;
+      align-items: center;
+    }
+
+    .big-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: var(--teal-glow);
+      border: 2px solid var(--teal);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'DM Serif Display', serif;
+      font-size: 26px;
+      color: var(--teal-light);
+    }
+
+    .patient-meta h2 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 24px;
+      color: var(--cream);
+      margin-bottom: 6px;
+    }
+
+    .meta-tags {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .meta-tag {
+      font-size: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      padding: 3px 10px;
+      color: var(--cream-dim);
+    }
+
+    .meta-tag.disease {
+      background: var(--teal-glow);
+      color: var(--teal-light);
+      border-color: rgba(13, 148, 136, 0.25);
+    }
+
+    .risk-big {
+      text-align: right;
+    }
+
+    .risk-big .label {
+      font-size: 11px;
+      color: var(--cream-dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+
+    .risk-big .value {
+      font-family: 'DM Serif Display', serif;
+      font-size: 28px;
+    }
+
+    .risk-big .value.High {
+      color: var(--alert);
+    }
+
+    .risk-big .value.Medium {
+      color: var(--warn);
+    }
+
+    .risk-big .value.Low {
+      color: var(--ok);
+    }
+
+    .risk-big .value.Unknown {
+      color: var(--cream-dim);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+
+    .tab {
+      padding: 12px 20px;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--cream-dim);
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all .15s;
+    }
+
+    .tab.active {
+      color: var(--teal-light);
+      border-bottom-color: var(--teal-light);
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .card {
+      background: var(--navy-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .card-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 17px;
+      color: var(--cream);
+    }
+
+    .readings-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 1px;
+      background: var(--border);
+    }
+
+    .reading-box {
+      background: var(--navy-card);
+      padding: 20px;
+    }
+
+    .reading-box .r-label {
+      font-size: 11px;
+      color: var(--cream-dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+
+    .reading-box .r-value {
+      font-family: 'DM Serif Display', serif;
+      font-size: 28px;
+      color: var(--cream);
+    }
+
+    .reading-box .r-unit {
+      font-size: 12px;
+      color: var(--cream-dim);
+      margin-top: 2px;
+    }
+
+    .reading-box.alert-high .r-value {
+      color: var(--alert);
+    }
+
+    .reading-box.alert-low .r-value {
+      color: var(--warn);
+    }
+
+    .reading-box .r-time {
+      font-size: 11px;
+      color: rgba(138, 136, 128, .5);
+      margin-top: 6px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--cream-dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 12px 20px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 13px 20px;
+      font-size: 13px;
+      color: var(--cream);
+      border-bottom: 1px solid rgba(13, 148, 136, 0.07);
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: var(--teal-glow);
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      margin-right: 7px;
+    }
+
+    .status-dot.taken {
+      background: var(--ok);
+    }
+
+    .status-dot.missed {
+      background: var(--alert);
+    }
+
+    .status-dot.late {
+      background: var(--warn);
+    }
+
+    .status-dot.pending {
+      background: var(--cream-dim);
+    }
+
+    .alert-row td {
+      background: var(--alert-bg) !important;
+    }
+
+    .btn-primary {
+      background: var(--teal);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 9px 18px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background .15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary:hover {
+      background: var(--teal-light);
+    }
+
+    /* Add Prescription Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(10, 22, 40, .85);
+      backdrop-filter: blur(4px);
+      z-index: 200;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.open {
+      display: flex;
+    }
+
+    .modal {
+      background: var(--navy-mid);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: fadeUp .25s ease;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(16px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+
+    .modal-title {
+      font-family: 'DM Serif Display', serif;
+      font-size: 22px;
+      color: var(--cream);
+      margin-bottom: 24px;
+    }
+
+    .modal-field {
+      margin-bottom: 16px;
+    }
+
+    .modal-field label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--cream-dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 7px;
+    }
+
+    .modal-field input,
+    .modal-field select,
+    .modal-field textarea {
+      width: 100%;
+      background: rgba(255, 255, 255, .04);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 11px 14px;
+      color: var(--cream);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      outline: none;
+      transition: border-color .2s;
+    }
+
+    .modal-field input:focus,
+    .modal-field select:focus {
+      border-color: var(--teal);
+    }
+
+    .modal-field select option {
+      background: var(--navy-mid);
+    }
+
+    .modal-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .btn-cancel {
+      flex: 1;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 11px;
+      color: var(--cream-dim);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .btn-cancel:hover {
+      border-color: var(--cream-dim);
+      color: var(--cream);
+    }
+
+    .timing-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .timing-chip {
+      background: var(--teal-glow);
+      border: 1px solid rgba(13, 148, 136, .25);
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      color: var(--teal-light);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .timing-chip button {
+      background: none;
+      border: none;
+      color: var(--teal-light);
+      cursor: pointer;
+      font-size: 14px;
+      line-height: 1;
+      padding: 0;
+    }
+
+    .timing-add {
+      display: flex;
+      gap: 8px;
+    }
+
+    .timing-add input {
+      flex: 1;
+    }
+
+    .timing-add button {
+      background: var(--teal);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 50px 24px;
+      color: var(--cream-dim);
+    }
+
+    .empty-state .icon {
+      font-size: 36px;
+      margin-bottom: 10px;
+    }
+
+    ::-webkit-scrollbar {
+      width: 5px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(13, 148, 136, .3);
+      border-radius: 3px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="sidebar">
+    <div class="logo">
+      <div class="logo-icon">🫀</div>
+      <div class="logo-text">VitalFlow <span>AI</span></div>
+    </div>
+    <a class="nav-item" href="dashboard.html"><span>←</span> Back to Dashboard</a>
+    <div style="margin-top:auto; padding:0 8px;">
+      <button class="btn-logout" onclick="logout()">Sign Out</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <a class="back-link" href="dashboard.html">← Back to Dashboard</a>
+
+    <!-- Patient Header -->
+    <div class="patient-header" id="patient-header">
+      <div class="big-avatar" id="p-avatar">?</div>
+      <div class="patient-meta">
+        <h2 id="p-name">Loading...</h2>
+        <div class="meta-tags" id="p-tags"></div>
+      </div>
+      <div class="risk-big">
+        <div class="label">Risk Level</div>
+        <div class="value Unknown" id="risk-value">—</div>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" onclick="showTab('vitals')">Latest Vitals</div>
+      <div class="tab" onclick="showTab('history')">Reading History</div>
+      <div class="tab" onclick="showTab('prescriptions')">Prescriptions</div>
+      <div class="tab" onclick="showTab('alerts')">Alerts</div>
+    </div>
+
+    <!-- VITALS TAB -->
+    <div class="tab-content active" id="tab-vitals">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Latest Readings</div>
+          <div id="latest-time" style="font-size:12px;color:var(--cream-dim)"></div>
+        </div>
+        <div class="readings-grid" id="vitals-grid">
+          <div class="empty-state" style="grid-column:1/-1;padding:40px">
+            <p>No readings yet</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- HISTORY TAB -->
+    <div class="tab-content" id="tab-history">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Reading History</div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Date & Time</th>
+              <th>Sugar (mg/dL)</th>
+              <th>BP (mmHg)</th>
+              <th>HR (bpm)</th>
+              <th>Temp (°C)</th>
+              <th>SpO2 (%)</th>
+              <th>Alert</th>
+            </tr>
+          </thead>
+          <tbody id="history-body">
+            <tr>
+              <td colspan="7" style="text-align:center;color:var(--cream-dim);padding:40px">No history</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- PRESCRIPTIONS TAB -->
+    <div class="tab-content" id="tab-prescriptions">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Prescriptions</div>
+          <button class="btn-primary" onclick="openAddPrescription()">＋ Add Prescription</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Medicine</th>
+              <th>Dosage</th>
+              <th>Frequency</th>
+              <th>Timing</th>
+              <th>Start</th>
+              <th>End</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="prescription-body">
+            <tr>
+              <td colspan="7" style="text-align:center;color:var(--cream-dim);padding:40px">No prescriptions</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ALERTS TAB -->
+    <div class="tab-content" id="tab-alerts">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Patient Alerts</div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Date & Time</th>
+              <th>Alert Details</th>
+            </tr>
+          </thead>
+          <tbody id="alerts-body">
+            <tr>
+              <td colspan="2" style="text-align:center;color:var(--cream-dim);padding:40px">No alerts</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Prescription Modal -->
+  <div class="modal-overlay" id="rx-modal">
+    <div class="modal">
+      <div class="modal-title">Add Prescription</div>
+
+      <div class="modal-row">
+        <div class="modal-field">
+          <label>Medicine Name</label>
+          <input type="text" id="rx-name" placeholder="e.g. Metformin">
+        </div>
+        <div class="modal-field">
+          <label>Dosage</label>
+          <input type="text" id="rx-dosage" placeholder="e.g. 500mg">
+        </div>
+      </div>
+
+      <div class="modal-field">
+        <label>Frequency</label>
+        <select id="rx-freq">
+          <option>Once daily</option>
+          <option>Twice daily</option>
+          <option>Three times daily</option>
+          <option>Every 8 hours</option>
+          <option>As needed</option>
+        </select>
+      </div>
+
+      <div class="modal-field">
+        <label>Reminder Timings</label>
+        <div class="timing-add">
+          <input type="time" id="rx-time-input">
+          <button onclick="addTiming()">Add</button>
+        </div>
+        <div class="timing-chips" id="timing-chips"></div>
+      </div>
+
+      <div class="modal-row">
+        <div class="modal-field">
+          <label>Start Date</label>
+          <input type="date" id="rx-start">
+        </div>
+        <div class="modal-field">
+          <label>End Date</label>
+          <input type="date" id="rx-end">
+        </div>
+      </div>
+
+      <div class="modal-field">
+        <label>Instructions (optional)</label>
+        <input type="text" id="rx-instructions" placeholder="e.g. Take after meals">
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn-cancel" onclick="closeAddPrescription()">Cancel</button>
+        <button class="btn-primary" onclick="savePrescription()" id="rx-btn" style="flex:1">Save Prescription</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API = 'http://localhost:8000';
+    const token = localStorage.getItem('doctor_token');
+    if (!token) window.location.href = 'index.html';
+    const authHeaders = { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' };
+
+    const params = new URLSearchParams(window.location.search);
+    const patientId = params.get('id');
+    if (!patientId) window.location.href = 'dashboard.html';
+
+    let timings = [];
+
+    function showTab(name) {
+      document.querySelectorAll('.tab').forEach((t, i) => {
+        const tabs = ['vitals', 'history', 'prescriptions', 'alerts'];
+        t.classList.toggle('active', tabs[i] === name);
+      });
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.getElementById(`tab-${name}`).classList.add('active');
+    }
+
+    async function loadPatient() {
+      const res = await fetch(`${API}/doctor/patients/${patientId}`, { headers: authHeaders });
+      if (!res.ok) return window.location.href = 'dashboard.html';
+      const p = await res.json();
+      document.title = `${p.name} — VitalFlow AI`;
+      document.getElementById('p-avatar').textContent = p.name.charAt(0).toUpperCase();
+      document.getElementById('p-name').textContent = p.name;
+      document.getElementById('p-tags').innerHTML = `
+      <span class="meta-tag">${p.age} years</span>
+      <span class="meta-tag">${p.gender || 'N/A'}</span>
+      <span class="meta-tag disease">${p.disease_type}</span>
+      <span class="meta-tag">Code: ${p.login_code}</span>
+      ${p.contact_number ? `<span class="meta-tag">${p.contact_number}</span>` : ''}
+    `;
+    }
+
+    async function loadReadings() {
+      const res = await fetch(`${API}/doctor/patients/${patientId}/readings`, { headers: authHeaders });
+      const readings = await res.json();
+      if (!readings.length) return;
+
+      const latest = readings[0];
+      document.getElementById('latest-time').textContent = new Date(latest.timestamp).toLocaleString();
+
+      const vitals = [
+        { key: 'blood_sugar', label: 'Blood Sugar', unit: 'mg/dL', high: 180, low: 70 },
+        { key: 'systolic_bp', label: 'Systolic BP', unit: 'mmHg', high: 140, low: 90 },
+        { key: 'diastolic_bp', label: 'Diastolic BP', unit: 'mmHg', high: 90, low: 60 },
+        { key: 'heart_rate', label: 'Heart Rate', unit: 'bpm', high: 100, low: 50 },
+        { key: 'temperature', label: 'Temperature', unit: '°C', high: 38.5, low: 35 },
+        { key: 'spo2', label: 'SpO2', unit: '%', high: null, low: 94 },
+      ];
+
+      const grid = document.getElementById('vitals-grid');
+      grid.innerHTML = vitals.map(v => {
+        const val = latest[v.key];
+        if (val === null || val === undefined) return '';
+        let cls = '';
+        if (v.high && val > v.high) cls = 'alert-high';
+        else if (v.low && val < v.low) cls = 'alert-low';
+        return `
+        <div class="reading-box ${cls}">
+          <div class="r-label">${v.label}</div>
+          <div class="r-value">${val}</div>
+          <div class="r-unit">${v.unit}</div>
+        </div>`;
+      }).join('') || '<div class="empty-state" style="grid-column:1/-1"><p>No readings</p></div>';
+
+      // History table
+      const tbody = document.getElementById('history-body');
+      tbody.innerHTML = readings.map(r => `
+      <tr class="${r.alert_triggered ? 'alert-row' : ''}">
+        <td>${new Date(r.timestamp).toLocaleString()}</td>
+        <td>${r.blood_sugar ?? '—'}</td>
+        <td>${r.systolic_bp ?? '—'}/${r.diastolic_bp ?? '—'}</td>
+        <td>${r.heart_rate ?? '—'}</td>
+        <td>${r.temperature ?? '—'}</td>
+        <td>${r.spo2 ?? '—'}</td>
+        <td>${r.alert_triggered ? '⚠ Yes' : '—'}</td>
+      </tr>
+    `).join('');
+    }
+
+    async function loadRisk() {
+      try {
+        // Use latest risk result if available via alerts
+        const res = await fetch(`${API}/doctor/patients/${patientId}/alerts`, { headers: authHeaders });
+        const alerts = await res.json();
+        // Show alert count in alerts tab
+        const tbody = document.getElementById('alerts-body');
+        if (alerts.length) {
+          tbody.innerHTML = alerts.map(a => `
+          <tr>
+            <td>${new Date(a.timestamp).toLocaleString()}</td>
+            <td style="color:#fca5a5">⚠ ${a.alert_message}</td>
+          </tr>
+        `).join('');
+        }
+      } catch (e) { }
+    }
+
+    async function loadPrescriptions() {
+      const res = await fetch(`${API}/prescriptions/patient/${patientId}`, { headers: authHeaders });
+      const rxs = await res.json();
+      const tbody = document.getElementById('prescription-body');
+      if (!rxs.length) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center;color:var(--cream-dim);padding:40px">No prescriptions</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = rxs.map(rx => `
+      <tr>
+        <td style="font-weight:500">${rx.medicine_name}</td>
+        <td>${rx.dosage}</td>
+        <td>${rx.frequency}</td>
+        <td>${(rx.timing || []).join(', ')}</td>
+        <td>${rx.start_date}</td>
+        <td>${rx.end_date || '—'}</td>
+        <td>
+          ${rx.is_active
+          ? `<button onclick="deactivateRx(${rx.id})" style="background:none;border:1px solid rgba(239,68,68,.3);color:#fca5a5;border-radius:5px;padding:4px 10px;cursor:pointer;font-size:12px">Stop</button>`
+          : `<span style="color:var(--cream-dim);font-size:12px">Inactive</span>`}
+        </td>
+      </tr>
+    `).join('');
+    }
+
+    function openAddPrescription() {
+      timings = [];
+      renderTimingChips();
+      document.getElementById('rx-start').value = new Date().toISOString().split('T')[0];
+      document.getElementById('rx-modal').classList.add('open');
+    }
+
+    function closeAddPrescription() {
+      document.getElementById('rx-modal').classList.remove('open');
+    }
+
+    function addTiming() {
+      const t = document.getElementById('rx-time-input').value;
+      if (t && !timings.includes(t)) {
+        timings.push(t);
+        timings.sort();
+        renderTimingChips();
+      }
+    }
+
+    function removeTiming(t) {
+      timings = timings.filter(x => x !== t);
+      renderTimingChips();
+    }
+
+    function renderTimingChips() {
+      document.getElementById('timing-chips').innerHTML = timings.map(t =>
+        `<div class="timing-chip">${t} <button onclick="removeTiming('${t}')">×</button></div>`
+      ).join('');
+    }
+
+    async function savePrescription() {
+      const name = document.getElementById('rx-name').value.trim();
+      const dosage = document.getElementById('rx-dosage').value.trim();
+      const freq = document.getElementById('rx-freq').value;
+      const start = document.getElementById('rx-start').value;
+      const end = document.getElementById('rx-end').value;
+      const instructions = document.getElementById('rx-instructions').value.trim();
+
+      if (!name || !dosage || !start) return alert('Medicine name, dosage and start date are required.');
+
+      const btn = document.getElementById('rx-btn');
+      btn.disabled = true; btn.textContent = 'Saving...';
+
+      try {
+        const res = await fetch(`${API}/prescriptions`, {
+          method: 'POST',
+          headers: authHeaders,
+          body: JSON.stringify({
+            patient_id: parseInt(patientId),
+            medicine_name: name,
+            dosage, frequency: freq,
+            timing: timings,
+            instructions,
+            start_date: start,
+            end_date: end || null
+          })
+        });
+        if (!res.ok) throw new Error('Failed');
+        closeAddPrescription();
+        loadPrescriptions();
+      } catch (e) {
+        alert('Failed to save prescription.');
+      } finally {
+        btn.disabled = false; btn.textContent = 'Save Prescription';
+      }
+    }
+
+    async function deactivateRx(rxId) {
+      if (!confirm('Stop this prescription?')) return;
+      await fetch(`${API}/prescriptions/${rxId}`, { method: 'DELETE', headers: authHeaders });
+      loadPrescriptions();
+    }
+
+    function logout() { localStorage.clear(); window.location.href = 'index.html'; }
+
+    loadPatient();
+    loadReadings();
+    loadRisk();
+    loadPrescriptions();
+  </script>
+</body>
+
+</html>
