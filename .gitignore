@@ -61,6 +61,9 @@ backend/ml/*.h5
 backend/ml/*.pt
 backend/ml/*.pth
 
+# ── Claude / AI Tools ─────────────────────────────────────────────────────────
+.claude/
+
 # ── IDE & Editors ─────────────────────────────────────────────────────────────
 .vscode/
 .idea/
@@ -103,6 +106,19 @@ $RECYCLE.BIN/
 logs/
 *.out
 
+# ── Node / Frontend tooling ───────────────────────────────────────────────────
+node_modules/
+.npm/
+.yarn/
+yarn-error.log
+package-lock.json
+yarn.lock
+.pnp.*
+dist/
+.next/
+.nuxt/
+.svelte-kit/
+
 # ── Misc ──────────────────────────────────────────────────────────────────────
 .cache/
 .temp/
@@ -110,3 +126,20 @@ tmp/
 *.bak
 *.tmp
 *.orig
+*.swp
+*.swo
+*~
+
+# ── Test / Coverage artifacts ─────────────────────────────────────────────────
+junit.xml
+report.xml
+.hypothesis/
+
+# ── Docker ────────────────────────────────────────────────────────────────────
+.dockerignore
+docker-compose.override.yml
+
+# ── Local config overrides ────────────────────────────────────────────────────
+*.local
+.env.local
+.env.*.local
