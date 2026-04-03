@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, WebSocket, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import PlainTextResponse
 import os
@@ -58,6 +58,36 @@ async def private_network_access(request: Request, call_next):
 app.include_router(doctor_router)
 app.include_router(patient_router)
 app.include_router(prescription_router)
+
+
+# ── Real-time WebSocket endpoint ───────────────────────────────────────────────
+
+from ws_manager import doctor_ws_endpoint  # noqa: E402
+
+
+@app.websocket("/ws/doctor/{doctor_id}")
+async def ws_doctor(
+    websocket: WebSocket,
+    doctor_id: int,
+    token: str = Query(..., description="JWT access token for authentication"),
+):
+    """
+    Persistent WebSocket connection for real-time alert delivery to doctors.
+
+    Connect from the doctor portal with:
+        const ws = new WebSocket(
+            `ws://localhost:8000/ws/doctor/${doctorId}?token=${accessToken}`
+        );
+
+    Incoming message types from server:
+        { "type": "alert",     "patient_name": "...", "alert_message": "..." }
+        { "type": "keepalive" }
+        { "type": "pong" }
+
+    Send from client to keep connection alive through proxies:
+        ws.send(JSON.stringify({ "type": "ping" }))
+    """
+    await doctor_ws_endpoint(websocket, doctor_id, token)
 
 
 @app.get("/")

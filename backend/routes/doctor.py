@@ -3,6 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List
+from datetime import datetime, timezone
 import random
 import string
 
@@ -194,7 +195,44 @@ def get_all_alerts(
     db: Session = Depends(get_db),
     doctor: models.Doctor = Depends(get_current_doctor)
 ):
-    """Get all alerts across all patients of this doctor."""
+    """Get unsolved (live) alerts across all patients of this doctor."""
+    patient_ids = [p.id for p in db.query(models.Patient).filter(
+        models.Patient.doctor_id == doctor.id
+    ).all()]
+
+    if not patient_ids:
+        return []
+
+    alerts = db.query(models.Reading).filter(
+        models.Reading.patient_id.in_(patient_ids),
+        models.Reading.alert_triggered == True,
+        models.Reading.alert_solved == False
+    ).order_by(models.Reading.timestamp.desc()).limit(50).all()
+
+    patient_map = {p.id: p.name for p in db.query(models.Patient).filter(
+        models.Patient.id.in_(patient_ids)
+    ).all()}
+
+    return [
+        {
+            "reading_id":    alert.id,
+            "patient_id":    alert.patient_id,
+            "patient_name":  patient_map.get(alert.patient_id, "Unknown"),
+            "timestamp":     alert.timestamp,
+            "alert_message": alert.alert_message,
+            "alert_solved":  alert.alert_solved,
+            "solved_at":     alert.solved_at,
+        }
+        for alert in alerts
+    ]
+
+
+@router.get("/alerts/history")
+def get_alerts_history(
+    db: Session = Depends(get_db),
+    doctor: models.Doctor = Depends(get_current_doctor)
+):
+    """Get all alerts (both solved and unsolved) for the doctor's patients."""
     patient_ids = [p.id for p in db.query(models.Patient).filter(
         models.Patient.doctor_id == doctor.id
     ).all()]
@@ -205,22 +243,54 @@ def get_all_alerts(
     alerts = db.query(models.Reading).filter(
         models.Reading.patient_id.in_(patient_ids),
         models.Reading.alert_triggered == True
-    ).order_by(models.Reading.timestamp.desc()).limit(50).all()
+    ).order_by(models.Reading.timestamp.desc()).limit(100).all()
 
     patient_map = {p.id: p.name for p in db.query(models.Patient).filter(
         models.Patient.id.in_(patient_ids)
     ).all()}
 
-    result = []
-    for alert in alerts:
-        result.append({
-            "patient_id": alert.patient_id,
-            "patient_name": patient_map.get(alert.patient_id, "Unknown"),
-            "timestamp": alert.timestamp,
+    return [
+        {
+            "reading_id":    alert.id,
+            "patient_id":    alert.patient_id,
+            "patient_name":  patient_map.get(alert.patient_id, "Unknown"),
+            "timestamp":     alert.timestamp,
             "alert_message": alert.alert_message,
-            "reading_id": alert.id
-        })
-    return result
+            "alert_solved":  alert.alert_solved,
+            "solved_at":     alert.solved_at,
+        }
+        for alert in alerts
+    ]
+
+
+@router.post("/alerts/{reading_id}/solve")
+def solve_alert(
+    reading_id: int,
+    db: Session = Depends(get_db),
+    doctor: models.Doctor = Depends(get_current_doctor)
+):
+    """Mark an alert as solved. Only the patient's assigned doctor can solve it."""
+    reading = db.query(models.Reading).filter(
+        models.Reading.id == reading_id,
+        models.Reading.alert_triggered == True
+    ).first()
+
+    if not reading:
+        raise HTTPException(status_code=404, detail="Alert not found")
+
+    # Verify this patient belongs to the requesting doctor
+    patient = db.query(models.Patient).filter(
+        models.Patient.id == reading.patient_id,
+        models.Patient.doctor_id == doctor.id
+    ).first()
+    if not patient:
+        raise HTTPException(status_code=403, detail="Not authorized to solve this alert")
+
+    reading.alert_solved = True
+    reading.solved_at = datetime.now(timezone.utc)
+    db.commit()
+
+    return {"message": "Alert marked as solved", "reading_id": reading_id}
 
 
 @router.get("/me", response_model=DoctorOut)

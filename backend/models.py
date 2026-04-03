@@ -74,6 +74,8 @@ class Reading(Base):
     notes = Column(Text, nullable=True)
     alert_triggered = Column(Boolean, default=False)
     alert_message = Column(Text, nullable=True)
+    alert_solved = Column(Boolean, default=False)
+    solved_at = Column(DateTime(timezone=True), nullable=True)
 
     patient = relationship("Patient", back_populates="readings")
 

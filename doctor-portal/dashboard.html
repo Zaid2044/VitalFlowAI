@@ -487,6 +487,61 @@
       color: rgba(138, 136, 128, 0.6);
     }
 
+    .alert-item-row {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .alert-item-body { flex: 1; min-width: 0; }
+
+    .btn-solve {
+      flex-shrink: 0;
+      background: transparent;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      border-radius: 6px;
+      padding: 5px 12px;
+      color: var(--ok);
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s, border-color .15s;
+      white-space: nowrap;
+    }
+
+    .btn-solve:hover { background: var(--ok-bg); border-color: var(--ok); }
+    .btn-solve:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .solved-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: var(--ok-bg);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: 20px;
+      padding: 2px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--ok);
+    }
+
+    .history-alert-item {
+      padding: 14px 20px;
+      border-bottom: 1px solid rgba(13, 148, 136, 0.07);
+    }
+
+    .history-alert-item:last-child { border-bottom: none; }
+
+    .history-alert-item.solved { opacity: 0.75; }
+
+    .alert-history-list {
+      padding: 8px 0;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
     .pulse-dot {
       width: 8px;
       height: 8px;
@@ -690,7 +745,8 @@
 
     <div class="nav-divider"></div>
     <div class="nav-label">Quick Access</div>
-    <a class="nav-item" href="#alerts-section"><span class="icon">🔔</span> Alerts</a>
+    <a class="nav-item" href="#alerts-section"><span class="icon">🔔</span> Live Alerts</a>
+    <a class="nav-item" href="#alert-history-section"><span class="icon">🗂</span> Alert History</a>
 
     <div class="sidebar-bottom">
       <div class="doctor-chip">
@@ -751,7 +807,7 @@
         </div>
       </div>
 
-      <!-- Alerts panel -->
+      <!-- Live Alerts panel -->
       <div class="card" id="alerts-section">
         <div class="card-header">
           <div class="card-title"><span class="pulse-dot"></span>Live Alerts</div>
@@ -761,6 +817,20 @@
             <div class="icon">✅</div>
             <p>No active alerts</p>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Alert History (full width below grid) -->
+    <div class="card" id="alert-history-section" style="margin-top:20px">
+      <div class="card-header">
+        <div class="card-title">🗂 Alert History</div>
+        <span id="alert-history-count" style="font-size:12px;color:var(--cream-dim)"></span>
+      </div>
+      <div class="alert-history-list" id="alert-history-list">
+        <div class="empty-state" style="padding:40px 20px">
+          <div class="icon">📋</div>
+          <p>No alert history yet</p>
         </div>
       </div>
     </div>
@@ -863,6 +933,34 @@
       } catch (e) { }
     }
 
+    async function loadAlertHistory() {
+      try {
+        const res = await fetch(`${API}/doctor/alerts/history`, { headers: authHeaders });
+        const alerts = await res.json();
+        const countEl = document.getElementById('alert-history-count');
+        const solved = alerts.filter(a => a.alert_solved).length;
+        countEl.textContent = `${alerts.length} total · ${solved} solved`;
+        renderAlertHistory(alerts);
+      } catch (e) { }
+    }
+
+    async function solveAlert(readingId, btn) {
+      btn.disabled = true;
+      btn.textContent = 'Saving…';
+      try {
+        const res = await fetch(`${API}/doctor/alerts/${readingId}/solve`, {
+          method: 'POST', headers: authHeaders
+        });
+        if (!res.ok) throw new Error();
+        // Refresh both panels
+        loadAlerts();
+        loadAlertHistory();
+      } catch (e) {
+        btn.disabled = false;
+        btn.textContent = '✓ Solved';
+      }
+    }
+
     function updateStats(patients) {
       document.getElementById('stat-total').textContent = patients.length;
       // We'll update high/low after we have risk data — for now show totals
@@ -895,16 +993,50 @@
       const list = document.getElementById('alert-list');
       if (!alerts.length) {
         list.innerHTML = `<div class="empty-state" style="padding:40px 20px"><div class="icon">✅</div><p>No active alerts</p></div>`;
+        document.getElementById('stat-alerts').textContent = '0';
         return;
       }
       list.innerHTML = alerts.map(a => `
-      <div class="alert-item" onclick="viewPatient(${a.patient_id})" style="cursor:pointer">
-        <div class="alert-patient">⚠ ${a.patient_name}</div>
-        <div class="alert-msg">${a.alert_message}</div>
-        <div class="alert-time">${new Date(a.timestamp).toLocaleString()}</div>
-      </div>
-    `).join('');
+        <div class="alert-item">
+          <div class="alert-item-row">
+            <div class="alert-item-body" onclick="viewPatient(${a.patient_id})" style="cursor:pointer">
+              <div class="alert-patient">⚠ ${a.patient_name}</div>
+              <div class="alert-msg">${a.alert_message}</div>
+              <div class="alert-time">${new Date(a.timestamp).toLocaleString()}</div>
+            </div>
+            <button class="btn-solve" onclick="solveAlert(${a.reading_id}, this)">✓ Solved</button>
+          </div>
+        </div>
+      `).join('');
       document.getElementById('stat-alerts').textContent = alerts.length;
+    }
+
+    function renderAlertHistory(alerts) {
+      const list = document.getElementById('alert-history-list');
+      if (!alerts.length) {
+        list.innerHTML = `<div class="empty-state" style="padding:40px 20px"><div class="icon">📋</div><p>No alert history yet</p></div>`;
+        return;
+      }
+      list.innerHTML = alerts.map(a => `
+        <div class="history-alert-item ${a.alert_solved ? 'solved' : ''}">
+          <div class="alert-item-row">
+            <div class="alert-item-body" onclick="viewPatient(${a.patient_id})" style="cursor:pointer">
+              <div class="alert-patient" style="color:${a.alert_solved ? 'var(--cream-dim)' : '#fca5a5'}">
+                ${a.alert_solved ? '✓' : '⚠'} ${a.patient_name}
+              </div>
+              <div class="alert-msg">${a.alert_message}</div>
+              <div class="alert-time">
+                Triggered: ${new Date(a.timestamp).toLocaleString()}
+                ${a.alert_solved && a.solved_at ? ` · Solved: ${new Date(a.solved_at).toLocaleString()}` : ''}
+              </div>
+            </div>
+            ${a.alert_solved
+              ? `<span class="solved-badge">✓ Solved</span>`
+              : `<button class="btn-solve" onclick="solveAlert(${a.reading_id}, this)">✓ Solved</button>`
+            }
+          </div>
+        </div>
+      `).join('');
     }
 
     function filterPatients(query) {
@@ -982,7 +1114,8 @@
     // Init
     loadPatients();
     loadAlerts();
-    setInterval(loadAlerts, 30000); // refresh alerts every 30s
+    loadAlertHistory();
+    setInterval(() => { loadAlerts(); loadAlertHistory(); }, 30000);
   </script>
 </body>
 

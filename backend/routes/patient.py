@@ -13,6 +13,7 @@ from auth import verify_password, create_access_token, get_current_patient
 from alerts import check_thresholds
 from ai_suggestions import get_ai_suggestions
 from ml.risk_model import predict_risk
+from ws_manager import ws_manager
 
 router = APIRouter(prefix="/patient", tags=["patient"])
 
@@ -133,6 +134,21 @@ def submit_reading(
     db.add(reading)
     db.commit()
     db.refresh(reading)
+
+    # Push a real-time WebSocket notification to the patient's doctor
+    # if this reading triggered a threshold alert.
+    if alert_triggered and patient.doctor_id:
+        ws_manager.notify_doctor_sync(
+            patient.doctor_id,
+            {
+                "type":           "alert",
+                "patient_id":     patient.id,
+                "patient_name":   patient.name,
+                "alert_message":  alert_message,
+                "timestamp":      reading.timestamp.isoformat(),
+                "reading_id":     reading.id,
+            },
+        )
 
     return {
         "id": reading.id,

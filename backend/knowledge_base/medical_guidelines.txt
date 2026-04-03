@@ -1,0 +1,106 @@
+# VitalFlow Medical Knowledge Base
+# Source: Synthesized from WHO, ADA, JNC, and ESC clinical guidelines.
+# Each section is delimited by "---CHUNK---" for RAG chunking.
+
+---CHUNK---
+DIABETES MANAGEMENT — BLOOD GLUCOSE TARGETS
+Fasting blood glucose target for adults with Type 2 Diabetes: 80–130 mg/dL (ADA 2024).
+2-hour postprandial target: < 180 mg/dL.
+HbA1c goal: < 7.0% for most non-pregnant adults; < 8.0% for patients with history of severe hypoglycemia, limited life expectancy, or extensive comorbidities.
+Hypoglycemia is defined as blood glucose < 70 mg/dL (Level 1) and < 54 mg/dL (Level 2, clinically significant).
+Hyperglycemic crisis threshold: blood glucose > 250 mg/dL warrants immediate clinical review.
+Post-operative diabetic patients should maintain blood glucose 140–180 mg/dL in hospital to reduce infection risk and promote wound healing.
+
+---CHUNK---
+DIABETES — DIETARY RECOMMENDATIONS
+Recommended foods: non-starchy vegetables (broccoli, spinach, kale), legumes (lentils, chickpeas), whole grains (oats, quinoa, barley), lean proteins (chicken, turkey, tofu), fatty fish (salmon, sardines), avocados, berries, nuts (walnuts, almonds), olive oil.
+Foods to limit or avoid: refined carbohydrates (white bread, white rice), sugary beverages (soda, fruit juice), processed snacks (chips, cookies), full-fat dairy in excess, red and processed meats, foods with added sugar.
+Consistent carbohydrate intake across meals reduces glycemic variability. The Mediterranean diet pattern is associated with improved HbA1c and cardiovascular outcomes in diabetic patients.
+Patients on insulin should time carbohydrate intake with their injection schedule. Alcohol can cause delayed hypoglycemia and should be consumed with food if at all.
+
+---CHUNK---
+HYPERTENSION — BLOOD PRESSURE CLASSIFICATION
+Normal: Systolic < 120 mmHg AND Diastolic < 80 mmHg.
+Elevated: Systolic 120–129 mmHg AND Diastolic < 80 mmHg.
+Stage 1 Hypertension: Systolic 130–139 mmHg OR Diastolic 80–89 mmHg.
+Stage 2 Hypertension: Systolic ≥ 140 mmHg OR Diastolic ≥ 90 mmHg.
+Hypertensive Crisis: Systolic > 180 mmHg AND/OR Diastolic > 120 mmHg — requires immediate medical evaluation.
+Treatment target for most adults with hypertension: < 130/80 mmHg (ACC/AHA 2023).
+For patients > 65 years, target systolic 125–135 mmHg balancing cardiovascular benefit against orthostatic hypotension risk.
+
+---CHUNK---
+HYPERTENSION — LIFESTYLE AND DIETARY INTERVENTIONS
+The DASH diet (Dietary Approaches to Stop Hypertension) reduces systolic BP by 8–14 mmHg.
+Sodium restriction to < 2,300 mg/day (ideally < 1,500 mg/day) lowers BP by 5–6 mmHg systolic.
+Weight reduction: every 1 kg of body weight lost reduces systolic BP by ~1 mmHg.
+Aerobic exercise (150 minutes/week of moderate intensity) reduces BP by 5–8 mmHg.
+Limiting alcohol to ≤ 1 drink/day (women) or ≤ 2 drinks/day (men) lowers BP by 4 mmHg.
+Potassium-rich foods (bananas, sweet potatoes, avocado, spinach) counteract sodium's BP-raising effects.
+Caffeine consumption can acutely raise BP by 3–4 mmHg; chronic effects in habitual consumers are minimal.
+
+---CHUNK---
+HEART RATE — CLINICAL INTERPRETATION
+Normal resting heart rate (adults): 60–100 bpm.
+Bradycardia: resting heart rate < 60 bpm. Symptomatic bradycardia (dizziness, syncope, fatigue) requires investigation.
+Tachycardia: resting heart rate > 100 bpm. Persistent tachycardia at rest may indicate pain, anxiety, fever, dehydration, anemia, hyperthyroidism, or cardiac arrhythmia.
+Target heart rate during moderate aerobic exercise: 50–70% of maximum HR (220 − age).
+Post-operative patients: resting HR > 100 bpm for > 24 hours should be evaluated for infection, pulmonary embolism, or fluid deficit.
+Athletes and highly conditioned individuals may have a resting HR of 40–60 bpm as a normal variant.
+
+---CHUNK---
+OXYGEN SATURATION (SpO2) — CLINICAL THRESHOLDS
+Normal SpO2: 95–100%.
+Acceptable lower limit in patients with COPD or chronic hypoxemia: 88–92% (higher targets may suppress hypoxic drive).
+SpO2 < 94%: supplemental oxygen is generally indicated.
+SpO2 < 90%: clinically significant hypoxemia; consider urgent intervention.
+SpO2 < 85%: life-threatening; immediate emergency response required.
+Pulse oximetry accuracy is reduced by nail polish, poor perfusion, motion artifact, and darker skin pigmentation (may read 2–4% higher than true value in some devices).
+Persistent SpO2 < 94% in a post-operative patient despite supplemental oxygen indicates possible respiratory complication (atelectasis, pneumonia, PE).
+
+---CHUNK---
+BODY TEMPERATURE — FEVER AND HYPOTHERMIA
+Normal body temperature range: 36.1–37.2°C (97.0–99.0°F).
+Low-grade fever: 37.3–38.0°C.
+Fever: ≥ 38.0°C (100.4°F). In post-operative patients, fever in the first 24–48 hours is often atelectasis; after 48 hours, suspect infection.
+High fever: ≥ 39.5°C requires investigation and antipyretic treatment.
+Hyperthermia > 41°C: medical emergency — risk of seizures, organ damage.
+Hypothermia: core temperature < 35°C. Mild (32–35°C), Moderate (28–32°C), Severe (< 28°C).
+In elderly patients, baseline temperature is lower; a temperature of 37.5°C may represent significant fever in this population.
+Post-surgical fever workup: the "5 W's" — Wind (atelectasis, pneumonia), Water (UTI), Wound (surgical site infection), Walking (DVT/PE), Wonder drugs (drug fever).
+
+---CHUNK---
+HEART DISEASE — POST-OPERATIVE RECOVERY GUIDELINES
+Patients recovering from cardiac events or cardiac surgery should monitor resting HR and BP daily.
+Cardiac rehabilitation programs reduce all-cause mortality by 20–25% and improve exercise tolerance.
+Activity restrictions: avoid lifting > 4.5 kg for 6–8 weeks post-sternotomy. Begin with short walks (5–10 minutes) and gradually increase by 1–2 minutes per day.
+Warning signs requiring immediate medical attention: chest pain or pressure, new shortness of breath at rest, palpitations, syncope, swelling in legs (possible DVT), fever > 38°C, wound redness or discharge.
+Medications: strict adherence to antiplatelet therapy, beta-blockers, ACE inhibitors, and statins is critical; missed doses are associated with increased MACE (Major Adverse Cardiovascular Events) risk.
+Dietary restriction: sodium < 2,000 mg/day; limit saturated fats; avoid high-cholesterol foods.
+
+---CHUNK---
+RESPIRATORY CONDITIONS — COPD AND RECOVERY
+COPD severity (GOLD staging) is based on FEV1 as a percentage of predicted: GOLD 1 (≥ 80%), GOLD 2 (50–79%), GOLD 3 (30–49%), GOLD 4 (< 30%).
+SpO2 target in COPD: 88–92% to avoid suppression of hypoxic respiratory drive.
+COPD exacerbation warning signs: increased dyspnea, change in sputum color/volume, new or worsening wheeze, confusion or decreased consciousness.
+Pursed-lip breathing and diaphragmatic breathing exercises improve airflow efficiency.
+Pulmonary rehabilitation improves quality of life and exercise capacity in COPD (strong evidence, GOLD guidelines).
+Smoking cessation is the single most effective intervention to slow COPD progression.
+Patients should avoid cold air, strong smells, and air pollution which can trigger bronchospasm.
+
+---CHUNK---
+MEDICATION ADHERENCE — CLINICAL IMPACT
+Medication non-adherence accounts for approximately 50% of treatment failures in chronic disease management.
+A 10% improvement in medication adherence is associated with a 13% reduction in all-cause hospitalization in hypertensive patients.
+In Type 2 Diabetes, consistent adherence to antidiabetic medications reduces HbA1c by 1.0–2.0% and reduces the risk of microvascular complications by 25–40%.
+Factors affecting adherence: complex dosing schedules, side effects, cost, patient health literacy, forgetfulness.
+Strategies to improve adherence: pill organizers, phone reminders, blister packs, once-daily formulations, motivational interviewing.
+Missed doses of antihypertensives should NOT be doubled. If a dose is missed by > 12 hours, skip it and resume the next scheduled dose.
+Healthcare providers should assess adherence at every visit using non-judgmental questioning (e.g., "Most people miss doses sometimes; how often do you miss yours?").
+
+---CHUNK---
+RISK STRATIFICATION — GENERAL PRINCIPLES
+Low risk: all vitals within normal range, high medication adherence (> 90%), no recent alerts. Recommended monitoring: weekly check-ins.
+Medium risk: one or more vitals approaching threshold, adherence 70–90%, occasional alerts. Recommended monitoring: every 2–3 days; review medications.
+High risk: vitals at or beyond threshold, adherence < 70%, consecutive missed doses, multiple concurrent alerts. Recommended action: immediate physician review; consider hospitalization.
+Composite risk indicators: a patient with high blood sugar + elevated BP + tachycardia simultaneously has a significantly elevated risk of acute cardiovascular event compared to any single abnormality.
+Age > 65 and disease duration > 10 years are independent risk multipliers. Elderly patients with a single high-risk vital warrant the same urgency as middle-aged patients with two.

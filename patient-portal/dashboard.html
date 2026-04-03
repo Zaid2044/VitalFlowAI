@@ -184,12 +184,12 @@
   </div>
 
   <div class="nav-label">My Health</div>
-  <a class="nav-item active" onclick="showSection('overview')"><span>⊞</span> Overview</a>
-  <a class="nav-item" onclick="showSection('log')"><span>📊</span> Log Readings</a>
-  <a class="nav-item" onclick="showSection('prescriptions')"><span>💊</span> Prescriptions</a>
-  <a class="nav-item" onclick="showSection('risk')"><span>🧠</span> Risk Score</a>
-  <a class="nav-item" onclick="showSection('suggestions')"><span>✨</span> AI Suggestions</a>
-  <a class="nav-item" onclick="showSection('history')"><span>📋</span> History</a>
+  <a class="nav-item active" onclick="showSection('overview',this);return false;"><span>⊞</span> Overview</a>
+  <a class="nav-item" onclick="showSection('log',this);return false;"><span>📊</span> Log Readings</a>
+  <a class="nav-item" onclick="showSection('prescriptions',this);return false;"><span>💊</span> Prescriptions</a>
+  <a class="nav-item" onclick="showSection('risk',this);return false;"><span>🧠</span> Risk Score</a>
+  <a class="nav-item" onclick="showSection('suggestions',this);return false;"><span>✨</span> AI Suggestions</a>
+  <a class="nav-item" onclick="showSection('history',this);return false;"><span>📋</span> History</a>
 
   <div class="sidebar-bottom">
     <button class="btn-logout" onclick="logout()">Sign Out</button>
@@ -411,14 +411,15 @@
 
   let patientInfo = null;
   let suggestionsLoaded = false;
+  let alarmsInitialised = false;
 
   document.getElementById('sidebar-name').textContent = localStorage.getItem('patient_name') || 'Patient';
 
-  function showSection(name) {
+  function showSection(name, el) {
     document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     document.getElementById(`section-${name}`).classList.add('active');
-    event.currentTarget.classList.add('active');
+    el.classList.add('active');
 
     if (name === 'suggestions' && !suggestionsLoaded) loadSuggestions();
     if (name === 'history') loadHistory();
@@ -499,15 +500,54 @@
         fetch(`${API}/patient/prescriptions`, { headers: authHeaders }),
         fetch(`${API}/patient/adherence/today`, { headers: authHeaders })
       ]);
-      const rxs = await rxRes.json();
+
+      // Guard: redirect on auth failure, bail on other errors
+      if (rxRes.status === 401 || logRes.status === 401) return logout();
+      if (!rxRes.ok || !logRes.ok) throw new Error('Server error');
+
+      const rxs  = await rxRes.json();
       const logs = await logRes.json();
 
       // Build lookup: "rxId_HH:MM" → status
       const logMap = {};
       logs.forEach(l => { logMap[`${l.prescription_id}_${l.scheduled_time}`] = l.status; });
 
-      // Auto-mark missed doses (>3 hours past, no log) — fire and forget
-      autoMarkMissed(rxs, logMap);
+      // Auto-mark missed doses and update logMap in memory before rendering
+      await autoMarkMissed(rxs, logMap);
+
+      function renderDoseRow(rx, t, forOverview) {
+        const key    = `${rx.id}_${t}`;
+        const status = logMap[key];
+        const diff   = minutesSince(t);
+        // Show Mark Taken if: no log yet AND dose time is within 2 hours in future or any past time
+        const canTake  = !status && diff > -120;
+        const actionBtn = canTake
+          ? `<button class="btn-take" onclick="markTaken(${rx.id},'${t}',this)">Mark Taken</button>`
+          : '';
+        const chip = doseStatusChip(status || 'pending');
+
+        if (forOverview) {
+          return `
+            <div class="alarm-item">
+              <div class="alarm-icon">💊</div>
+              <div class="alarm-info">
+                <div class="a-med">${rx.medicine_name}</div>
+                <div class="a-time">⏰ ${t}</div>
+                <div class="a-dose">${rx.dosage} · ${rx.frequency}</div>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+                ${chip}
+                ${actionBtn}
+              </div>
+            </div>`;
+        }
+        return `
+          <div class="dose-row">
+            <span class="dose-time-label">⏰ ${t}</span>
+            ${chip}
+            ${actionBtn}
+          </div>`;
+      }
 
       // ── Today's Meds overview ──
       const todayDiv = document.getElementById('today-meds');
@@ -515,27 +555,7 @@
         todayDiv.innerHTML = `<div class="empty-state"><div class="icon">💊</div><p>No active prescriptions</p></div>`;
       } else {
         todayDiv.innerHTML = rxs.flatMap(rx =>
-          (rx.timing || []).map(t => {
-            const key = `${rx.id}_${t}`;
-            const status = logMap[key];
-            const diff = minutesSince(t);
-            const actionBtn = (!status && diff > -30)
-              ? `<button class="btn-take" id="btn-${key}" onclick="markTaken(${rx.id},'${t}',this)">Mark Taken</button>`
-              : '';
-            return `
-              <div class="alarm-item">
-                <div class="alarm-icon">💊</div>
-                <div class="alarm-info">
-                  <div class="a-med">${rx.medicine_name}</div>
-                  <div class="a-time">⏰ ${t}</div>
-                  <div class="a-dose">${rx.dosage} · ${rx.frequency}</div>
-                </div>
-                <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
-                  ${status ? doseStatusChip(status) : doseStatusChip('pending')}
-                  ${actionBtn}
-                </div>
-              </div>`;
-          })
+          (rx.timing || []).map(t => renderDoseRow(rx, t, true))
         ).join('');
       }
 
@@ -544,43 +564,35 @@
       if (!rxs.length) {
         rxList.innerHTML = `<div class="empty-state"><div class="icon">💊</div><p>No active prescriptions</p></div>`;
       } else {
-        rxList.innerHTML = rxs.map(rx => {
-          const doseRows = (rx.timing || []).map(t => {
-            const key = `${rx.id}_${t}`;
-            const status = logMap[key];
-            const diff = minutesSince(t);
-            const actionBtn = (!status && diff > -30)
-              ? `<button class="btn-take" id="btn-${key}" onclick="markTaken(${rx.id},'${t}',this)">Mark Taken</button>`
-              : '';
-            return `<div class="dose-row">
-              <span class="dose-time-label">⏰ ${t}</span>
-              ${status ? doseStatusChip(status) : doseStatusChip('pending')}
-              ${actionBtn}
-            </div>`;
-          }).join('');
-
-          return `
-            <div class="rx-item">
-              <div class="rx-name">${rx.medicine_name} <span style="font-size:13px;font-weight:400;color:var(--cream-dim)">${rx.dosage}</span></div>
-              <div class="rx-meta">${rx.frequency} · From ${rx.start_date}${rx.end_date ? ' to '+rx.end_date : ''}</div>
-              ${doseRows}
-              ${rx.instructions ? `<div class="rx-instructions" style="margin-top:10px">📝 ${rx.instructions}</div>` : ''}
-            </div>`;
-        }).join('');
+        rxList.innerHTML = rxs.map(rx => `
+          <div class="rx-item">
+            <div class="rx-name">${rx.medicine_name} <span style="font-size:13px;font-weight:400;color:var(--cream-dim)">${rx.dosage}</span></div>
+            <div class="rx-meta">${rx.frequency} · From ${rx.start_date}${rx.end_date ? ' to ' + rx.end_date : ''}</div>
+            ${(rx.timing || []).map(t => renderDoseRow(rx, t, false)).join('')}
+            ${rx.instructions ? `<div class="rx-instructions" style="margin-top:10px">📝 ${rx.instructions}</div>` : ''}
+          </div>`
+        ).join('');
       }
 
-      setupAlarms(rxs);
-    } catch(e) { console.error('loadPrescriptions:', e); }
+      // Only register alarms once — avoids stacking setIntervals on every refresh
+      if (!alarmsInitialised) {
+        setupAlarms(rxs);
+        alarmsInitialised = true;
+      }
+
+    } catch(e) { console.error('loadPrescriptions error:', e); }
   }
 
   async function markTaken(rxId, scheduledTime, btn) {
-    btn.disabled = true; btn.textContent = 'Saving…';
-    const diff = minutesSince(scheduledTime);
-    const status = diff > 0 ? 'late' : 'taken';
+    btn.disabled = true;
+    btn.textContent = 'Saving…';
+    const diff   = minutesSince(scheduledTime);
+    const status = diff > 60 ? 'late' : 'taken';
 
     try {
       const res = await fetch(`${API}/patient/adherence`, {
-        method: 'POST', headers: authHeaders,
+        method: 'POST',
+        headers: authHeaders,
         body: JSON.stringify({
           prescription_id: rxId,
           date: todayStr(),
@@ -588,31 +600,46 @@
           status
         })
       });
-      if (!res.ok) throw new Error();
-      // Refresh to update all status chips
-      loadPrescriptions();
+      if (res.status === 401) return logout();
+      if (!res.ok) throw new Error('Server error');
+
+      // Reload prescriptions to update all status chips
+      await loadPrescriptions();
     } catch(e) {
-      btn.disabled = false; btn.textContent = 'Mark Taken';
+      btn.disabled = false;
+      btn.textContent = 'Mark Taken';
+      btn.style.cssText += ';background:var(--alert);border-color:var(--alert)';
+      setTimeout(() => { btn.style.background = ''; btn.style.borderColor = ''; }, 2000);
     }
   }
 
   async function autoMarkMissed(rxs, logMap) {
-    const today = todayStr();
+    // Update logMap in memory first so the UI renders correctly without waiting for the server
+    // Then fire the server updates in parallel
+    const today    = todayStr();
+    const promises = [];
+
     for (const rx of rxs) {
       for (const t of (rx.timing || [])) {
         const key = `${rx.id}_${t}`;
         if (!logMap[key] && minutesSince(t) > 180) {
-          // silently post missed — no await needed, best-effort
-          fetch(`${API}/patient/adherence`, {
-            method: 'POST', headers: authHeaders,
-            body: JSON.stringify({ prescription_id: rx.id, date: today, scheduled_time: t, status: 'missed' })
-          }).catch(() => {});
+          logMap[key] = 'missed';   // immediate in-memory update → correct chip on first render
+          promises.push(
+            fetch(`${API}/patient/adherence`, {
+              method: 'POST',
+              headers: authHeaders,
+              body: JSON.stringify({ prescription_id: rx.id, date: today, scheduled_time: t, status: 'missed' })
+            }).catch(() => {})
+          );
         }
       }
     }
+
+    await Promise.all(promises);
   }
 
   function setupAlarms(rxs) {
+    // Check every minute if it's time for a medication alarm
     setInterval(() => {
       const now = new Date();
       const currentTime = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
@@ -622,9 +649,6 @@
         });
       });
     }, 60000);
-
-    // Re-check missed doses every 5 minutes
-    setInterval(() => loadPrescriptions(), 300000);
   }
 
   function showMedAlarm(med, dose, time) {
@@ -811,6 +835,9 @@
   loadReadings();
   loadPrescriptions();
   loadRisk();
+
+  // Refresh prescriptions + statuses every 5 minutes (single interval, not stacked)
+  setInterval(loadPrescriptions, 300000);
 </script>
 </body>
 </html>

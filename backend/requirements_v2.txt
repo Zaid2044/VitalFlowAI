@@ -1,0 +1,44 @@
+# ── VitalFlow AI — Backend Dependencies (v2) ──────────────────────────────────
+# Install all with: pip install -r requirements_v2.txt
+# Tested on Python 3.10+
+
+# ── Core API ───────────────────────────────────────────────────────────────────
+fastapi==0.115.5
+uvicorn[standard]==0.32.1       # [standard] adds websockets + httptools
+python-multipart==0.0.12        # required for OAuth2PasswordRequestForm
+python-dotenv==1.0.1
+
+# ── Database ───────────────────────────────────────────────────────────────────
+sqlalchemy==2.0.36
+
+# ── Authentication ─────────────────────────────────────────────────────────────
+python-jose[cryptography]==3.3.0
+bcrypt==4.2.0
+passlib==1.7.4                  # optional but useful for password utilities
+
+# ── AI / LLM ───────────────────────────────────────────────────────────────────
+google-genai==1.7.0             # Gemini API (used by ai_suggestions.py and rag_suggestions.py)
+
+# ── ML — Classic Model (existing) ─────────────────────────────────────────────
+numpy==1.26.4
+scikit-learn==1.5.2
+
+# ── ML — LSTM Time-Series Model (NEW) ─────────────────────────────────────────
+# CPU-only PyTorch build (~280 MB). For GPU support replace with the CUDA wheel:
+#   pip install torch --index-url https://download.pytorch.org/whl/cu121
+torch==2.4.1
+
+# ── RAG — Embedding + Vector Search (NEW) ─────────────────────────────────────
+sentence-transformers==3.3.1    # downloads all-MiniLM-L6-v2 (~80 MB) on first use
+faiss-cpu==1.9.0                # in-process FAISS vector index (no server needed)
+# Alternative: chromadb==0.5.23 — swap build_faiss_index() in rag_suggestions.py
+
+# ── Field-Level Encryption (NEW) ───────────────────────────────────────────────
+cryptography==43.0.3            # Fernet symmetric encryption for EncryptedFloat
+
+# ── WebSockets — already included via uvicorn[standard] ───────────────────────
+# websockets==13.1               # uncomment only if NOT using uvicorn[standard]
+
+# ── Utilities ──────────────────────────────────────────────────────────────────
+httpx==0.27.2                   # async HTTP client (used by sentence-transformers)
+tqdm==4.67.0                    # progress bars during model download / training

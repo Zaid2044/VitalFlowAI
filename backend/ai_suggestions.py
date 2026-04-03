@@ -1,10 +1,10 @@
 import os
-from google import genai
+from groq import Groq
 from dotenv import load_dotenv
 
 load_dotenv()
 
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+client = Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 
 def _sanitize(value: str, max_length: int = 100) -> str:
@@ -55,11 +55,13 @@ Please provide:
 
 Keep it concise, friendly, and practical. Do not provide a diagnosis. Format clearly with the three sections."""
 
-    response = client.models.generate_content(
-        model="gemini-1.5-flash",
-        contents=prompt
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=1024,
+        temperature=0.7,
     )
-    return response.text
+    return response.choices[0].message.content
 
 
 if __name__ == "__main__":
