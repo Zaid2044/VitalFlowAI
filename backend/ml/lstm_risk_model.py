@@ -359,9 +359,11 @@ def predict_risk_lstm(reading_sequence: List[dict]) -> dict:
     recent = reading_sequence[-SEQUENCE_LEN:]
     rows   = [_dict_to_row(e) for e in recent]
 
-    # Front-pad with population means if the sequence is too short
+    # Front-pad with the patient's earliest known reading (forward-fill).
+    # Falls back to population means only when the sequence is completely empty.
+    pad_row = rows[0] if rows else list(FEATURE_MEANS.values())
     while len(rows) < SEQUENCE_LEN:
-        rows.insert(0, list(FEATURE_MEANS.values()))
+        rows.insert(0, pad_row)
 
     arr        = np.array(rows, dtype=np.float32)          # (SEQUENCE_LEN, N_FEATURES)
     arr_scaled = scaler.transform(arr)

@@ -99,14 +99,11 @@ class ConnectionManager:
         event loop without blocking the calling thread.
         """
         try:
-            loop = asyncio.get_event_loop()
-            if loop.is_running():
-                asyncio.ensure_future(self.notify_doctor(doctor_id, payload))
-            else:
-                loop.run_until_complete(self.notify_doctor(doctor_id, payload))
+            loop = asyncio.get_running_loop()
+            asyncio.ensure_future(self.notify_doctor(doctor_id, payload), loop=loop)
         except RuntimeError:
             logger.warning(
-                "[WS] Could not schedule notify_doctor for doctor %d — no event loop.",
+                "[WS] Could not schedule notify_doctor for doctor %d — no running event loop.",
                 doctor_id,
             )
 

@@ -104,3 +104,65 @@ Medium risk: one or more vitals approaching threshold, adherence 70–90%, occas
 High risk: vitals at or beyond threshold, adherence < 70%, consecutive missed doses, multiple concurrent alerts. Recommended action: immediate physician review; consider hospitalization.
 Composite risk indicators: a patient with high blood sugar + elevated BP + tachycardia simultaneously has a significantly elevated risk of acute cardiovascular event compared to any single abnormality.
 Age > 65 and disease duration > 10 years are independent risk multipliers. Elderly patients with a single high-risk vital warrant the same urgency as middle-aged patients with two.
+
+---CHUNK---
+HYPERGLYCEMIC CRISIS — MANAGEMENT PROTOCOL
+Blood sugar > 250 mg/dL: patient should check for ketones if Type 1 diabetic; increase water intake; avoid strenuous exercise; contact physician if values persist after 2 hours.
+Blood sugar > 300 mg/dL: high risk of diabetic ketoacidosis (DKA) or hyperosmolar hyperglycemic state (HHS). Symptoms: extreme thirst, frequent urination, nausea, abdominal pain, fruity breath (DKA), confusion (HHS). Seek emergency care immediately.
+Blood sugar > 400 mg/dL: medical emergency regardless of symptoms. Call emergency services.
+Insulin correction doses ("correction bolus"): only administer if prescribed; never guess a dose. Correction factor is typically (current glucose – target glucose) / insulin sensitivity factor.
+Common triggers of hyperglycemia: infection/illness, missed insulin or oral medication, dietary indiscretion, physical or emotional stress, steroid medications.
+Action plan if blood sugar > 250 after 2 hours: check for illness, ensure medication was taken, drink 250 mL of water, recheck in 1 hour. If still > 250, call physician.
+
+---CHUNK---
+HYPOGLYCEMIA — RECOGNITION AND TREATMENT
+Mild hypoglycemia (blood sugar 54–70 mg/dL): administer the "Rule of 15" — consume 15 g of fast-acting carbohydrate (4 glucose tablets, 120 mL fruit juice, or 3 teaspoons of sugar). Recheck in 15 minutes; repeat if still < 70 mg/dL.
+Moderate hypoglycemia (blood sugar < 54 mg/dL): treat with 20–30 g fast-acting carbohydrates. Recheck in 15 minutes. If conscious, avoid lying down. Do not consume fat-containing foods (chocolate, peanut butter) as they slow glucose absorption.
+Severe hypoglycemia (< 40 mg/dL or unconscious patient): do not give anything by mouth. Use glucagon injection kit if available; call emergency services immediately. If no glucagon: rub glucose gel or honey inside the cheek carefully.
+Post-hypoglycemia: eat a balanced snack with protein and complex carbohydrate after recovery (e.g., peanut butter on wholegrain crackers).
+Nocturnal hypoglycemia risk factors: skipped bedtime snack, excessive exercise earlier in the day, alcohol consumption, long-acting insulin peaking overnight.
+Patients on sulfonylureas or insulin who experience hypoglycemia should notify their physician for medication dose review.
+
+---CHUNK---
+BLOOD PRESSURE EMERGENCY — HYPERTENSIVE CRISIS PROTOCOL
+Systolic > 180 mmHg OR diastolic > 120 mmHg with symptoms (chest pain, shortness of breath, severe headache, visual changes, confusion, neurological deficits): hypertensive emergency — call emergency services immediately.
+Systolic > 180 mmHg OR diastolic > 120 mmHg without symptoms: hypertensive urgency — contact physician within 1 hour; sit quietly, avoid exertion or caffeine, take prescribed antihypertensive if due.
+Do NOT attempt to lower BP too rapidly at home; overly rapid reduction can cause stroke, MI, or renal failure. Target reduction of 25% in the first hour under physician supervision only.
+Common causes of acute BP spike: missed medications, excessive sodium intake, pain, anxiety, stimulants (decongestants, energy drinks, cocaine), sleep deprivation.
+Home BP cuff technique: rest 5 minutes before measurement; sit with feet flat, arm at heart level, bladder emptied. Take 2–3 readings 1 minute apart and average them.
+
+---CHUNK---
+HEART RATE ABNORMALITIES — CLINICAL ACTION GUIDE
+Resting HR > 120 bpm in a non-exercising patient: evaluate for fever, dehydration, pain, anemia, anxiety, thyroid dysfunction, or arrhythmia. Check temperature and hydration status first.
+Resting HR > 150 bpm: high suspicion for supraventricular tachycardia (SVT) or atrial fibrillation; seek immediate medical evaluation.
+HR < 50 bpm with symptoms (dizziness, presyncope, fatigue): evaluate for complete heart block, sick sinus syndrome, or medication toxicity (beta-blockers, digoxin overdose).
+Irregular pulse: may indicate atrial fibrillation; confirm with ECG. AF increases stroke risk 5-fold; anticoagulation therapy is critical.
+Exercise-induced HR > 90% of maximum (220 − age) in patients with known heart disease: stop exercise; rest; notify physician.
+Palpitations with chest discomfort, syncope, or near-syncope: treat as cardiac emergency until proven otherwise.
+
+---CHUNK---
+OBESITY AND METABOLIC SYNDROME — MONITORING AND MANAGEMENT
+Metabolic syndrome is defined by 3 or more: waist circumference > 102 cm (men) or > 88 cm (women), triglycerides ≥ 150 mg/dL, HDL < 40 mg/dL (men) or < 50 mg/dL (women), BP ≥ 130/85 mmHg, fasting glucose ≥ 100 mg/dL.
+Weight loss of 5–10% of body weight significantly improves blood sugar, BP, and lipid profile in overweight patients with metabolic syndrome.
+Caloric deficit of 500–750 kcal/day produces 0.5–0.75 kg/week weight loss — a sustainable and clinically recommended rate.
+Physical activity target: 150–300 minutes/week moderate-intensity aerobic activity plus 2 days/week resistance training.
+Sleep apnea is strongly associated with metabolic syndrome and worsens blood sugar control, BP, and cardiovascular risk; patients should be screened if symptomatic (snoring, daytime somnolence).
+Bariatric surgery is considered when BMI ≥ 40, or ≥ 35 with obesity-related comorbidities, and lifestyle interventions have failed.
+
+---CHUNK---
+CHRONIC KIDNEY DISEASE (CKD) — MONITORING IN DIABETIC AND HYPERTENSIVE PATIENTS
+CKD staging (eGFR): G1 (≥ 90), G2 (60–89), G3a (45–59), G3b (30–44), G4 (15–29), G5 (< 15, kidney failure).
+Blood pressure target in CKD with proteinuria: < 130/80 mmHg using ACE inhibitor or ARB as first-line agent.
+Diabetes + CKD: SGLT2 inhibitors (e.g., empagliflozin, dapagliflozin) provide renal-protective benefits beyond glucose lowering and are recommended in CKD stages G2–G3.
+Metformin: reduce dose when eGFR < 45; discontinue when eGFR < 30 due to risk of lactic acidosis.
+Monitor potassium closely in patients on ACE inhibitors/ARBs with CKD — hyperkalemia risk. Avoid NSAIDs (ibuprofen, naproxen) in all CKD patients.
+Annual monitoring: urine albumin-to-creatinine ratio (UACR), serum creatinine, eGFR, potassium, hemoglobin (anemia common in CKD stages 3–5).
+
+---CHUNK---
+MENTAL HEALTH AND CHRONIC DISEASE — INTEGRATED CARE
+Depression affects 20–30% of patients with chronic conditions such as diabetes, heart failure, and COPD; it significantly worsens adherence and clinical outcomes.
+PHQ-2 screening questions: "Over the past 2 weeks, have you felt little interest or pleasure in doing things?" and "Have you felt down, depressed, or hopeless?" Positive screen warrants PHQ-9 assessment.
+Diabetes distress is distinct from clinical depression and is driven by fear of hypoglycemia, burden of self-management, and worry about complications. Validate and address in consultations.
+Anxiety disorders are independently associated with worse blood pressure control and increased cardiac events.
+Collaborative care models (integrating mental health within primary care) improve glycemic control and reduce depressive symptoms in diabetic patients.
+Patients with high risk scores and low adherence should be assessed for depression, anxiety, and social support barriers before escalating medication doses.

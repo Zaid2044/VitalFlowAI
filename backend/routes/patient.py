@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
-from pydantic import BaseModel
+from pydantic import BaseModel, model_validator
 from typing import Optional, List
 import json
 import logging
@@ -28,6 +28,14 @@ class ReadingCreate(BaseModel):
     temperature: Optional[float] = None
     spo2: Optional[float] = None
     notes: Optional[str] = None
+
+    @model_validator(mode="after")
+    def at_least_one_vital(self) -> "ReadingCreate":
+        vitals = [self.blood_sugar, self.systolic_bp, self.diastolic_bp,
+                  self.heart_rate, self.temperature, self.spo2]
+        if all(v is None for v in vitals):
+            raise ValueError("At least one vital sign must be provided")
+        return self
 
 
 class AdherenceUpdate(BaseModel):
