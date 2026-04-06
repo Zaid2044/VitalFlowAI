@@ -519,8 +519,9 @@
         const key    = `${rx.id}_${t}`;
         const status = logMap[key];
         const diff   = minutesSince(t);
-        // Show Mark Taken if: no log yet AND dose time is within 2 hours in future or any past time
-        const canTake  = !status && diff > -120;
+        // Show Mark Taken if: no log yet, dose is within 2 hrs in the future, and < 3 hrs past
+        // (after 180 min the dose is auto-marked missed — no point showing the button)
+        const canTake  = !status && diff > -120 && diff <= 180;
         const actionBtn = canTake
           ? `<button class="btn-take" onclick="markTaken(${rx.id},'${t}',this)">Mark Taken</button>`
           : '';

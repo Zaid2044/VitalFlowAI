@@ -6,6 +6,13 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# Fail fast on missing critical environment variables so issues are caught at startup,
+# not silently on the first request that needs them.
+if not os.getenv("SECRET_KEY"):
+    raise RuntimeError("SECRET_KEY environment variable is not set")
+if not os.getenv("GROQ_API_KEY"):
+    raise RuntimeError("GROQ_API_KEY environment variable is not set — AI suggestions will not work")
+
 from database import engine, Base
 import models  # noqa: F401 - ensures models are registered
 
