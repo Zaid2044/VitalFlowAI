@@ -12,6 +12,11 @@ if not os.getenv("SECRET_KEY"):
     raise RuntimeError("SECRET_KEY environment variable is not set")
 if not os.getenv("GROQ_API_KEY"):
     raise RuntimeError("GROQ_API_KEY environment variable is not set — AI suggestions will not work")
+if not os.getenv("FIELD_ENCRYPTION_KEY"):
+    raise RuntimeError(
+        "FIELD_ENCRYPTION_KEY environment variable is not set — vital-sign encryption will fail.\n"
+        "Generate one with: python -c \"from cryptography.fernet import Fernet; print(Fernet.generate_key().decode())\""
+    )
 
 from database import engine, Base
 import models  # noqa: F401 - ensures models are registered

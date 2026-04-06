@@ -2,6 +2,7 @@ from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Tex
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from database import Base
+from crypto import EncryptedFloat  # transparent AES-128 encryption for vital-sign columns
 
 
 class Doctor(Base):
@@ -64,12 +65,12 @@ class Reading(Base):
     patient_id = Column(Integer, ForeignKey("patients.id"), nullable=False)
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
 
-    blood_sugar = Column(Float, nullable=True)        # mg/dL
-    systolic_bp = Column(Float, nullable=True)        # mmHg
-    diastolic_bp = Column(Float, nullable=True)       # mmHg
-    heart_rate = Column(Float, nullable=True)         # bpm
-    temperature = Column(Float, nullable=True)        # Celsius
-    spo2 = Column(Float, nullable=True)               # percentage
+    blood_sugar = Column(EncryptedFloat, nullable=True)   # mg/dL   — AES-encrypted at rest
+    systolic_bp = Column(EncryptedFloat, nullable=True)   # mmHg    — AES-encrypted at rest
+    diastolic_bp = Column(EncryptedFloat, nullable=True)  # mmHg    — AES-encrypted at rest
+    heart_rate = Column(EncryptedFloat, nullable=True)    # bpm     — AES-encrypted at rest
+    temperature = Column(EncryptedFloat, nullable=True)   # Celsius — AES-encrypted at rest
+    spo2 = Column(EncryptedFloat, nullable=True)          # %       — AES-encrypted at rest
 
     notes = Column(Text, nullable=True)
     alert_triggered = Column(Boolean, default=False)
